@@ -30,16 +30,22 @@ export default function Footer() {
                                 Home
                             </Link>
                             <Link
-                                href='/pages/about'
+                                href='/pages/test'
                                 className="text-xl text-coalGray hover:underline"
                             >
-                                Sobre
+                                Página 1
                             </Link>
                             <Link
-                                href='/pages/collectionPoints'
+                                href='/pages/test'
                                 className="text-xl text-coalGray hover:underline"
                             >
-                                Pontos de Coleta
+                                Página 2
+                            </Link>
+                            <Link
+                                href='/pages/test'
+                                className="text-xl text-coalGray hover:underline"
+                            >
+                                Página 3
                             </Link>
                         </div>
                     </div>
