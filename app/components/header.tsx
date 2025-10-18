@@ -201,7 +201,7 @@ export default function Header() {
                             <FaGlobe className="size-6" />
                         </Link> */}
                         <Link
-                            href='/pages/collectionPoints'
+                            href='/pages/test'
                             className="px-4 py-2 font-semibold bg-mintGreen text-coalGray rounded hover:bg-petroleumGreen hover:text-white transition flex items-center justify-center"
                             onClick={toggleMenu}
                         >
