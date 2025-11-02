@@ -62,11 +62,10 @@ export interface Address {
 export interface NutritionalAssessment {
   id: string;
   patientId: string;
-  studentId: string;
+  nutritionistId: string; 
   anthropometricData: AnthropometricData;
   foodRecord?: FoodRecord;
   physicalActivity?: PhysicalActivity;
-  labResults?: LabResult[];
   observations?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -115,7 +114,7 @@ export enum MealType {
 export interface FoodItem {
   name: string;
   quantity: number;
-  unit: string; // g, ml, unidade, etc.
+  unit: string; // g, ml, unidade, etc. 
   calories?: number;
   proteins?: number;
   carbohydrates?: number;
@@ -142,26 +141,10 @@ export enum ActivityIntensity {
   HIGH = 'high'
 }
 
-export interface LabResult {
-  id: string;
-  testName: string;
-  value: number;
-  unit: string;
-  referenceRange: string;
-  date: Date;
-  status: LabResultStatus;
-}
-
-export enum LabResultStatus {
-  NORMAL = 'normal',
-  BELOW_NORMAL = 'below_normal',
-  ABOVE_NORMAL = 'above_normal'
-}
-
 export interface DietPlan {
   id: string;
   patientId: string;
-  studentId: string;
+  nutritionistId: string; 
   title: string;
   description?: string;
   startDate: Date;

@@ -21,7 +21,7 @@ export const encrypt = (text: string): string => {
     return `${iv.toString('hex')}:${encrypted}`;
   } catch (error) {
     console.error('Erro na criptografia:', error);
-    return text; // Fallback - não criptografado
+    return text; 
   }
 };
 
@@ -47,14 +47,10 @@ export const decrypt = (encryptedText: string): string => {
     return decrypted;
   } catch (error) {
     console.error('Erro na descriptografia:', error);
-    return encryptedText; // Fallback - retorna como está
+    return encryptedText; 
   }
 };
 
-/**
- * 🔗 HASH PARA BUSCA (CPF, email)
- * Permite busca sem expor o dado original
- */
 export const hashForSearch = (data: string): string => {
   if (!data) return '';
   

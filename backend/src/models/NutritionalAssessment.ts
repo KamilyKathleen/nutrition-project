@@ -1,10 +1,11 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
-import { NutritionalAssessment, AnthropometricData, FoodRecord, PhysicalActivity, LabResult, LabResultStatus, MealType, ActivityIntensity } from '@/types';
+import { NutritionalAssessment, AnthropometricData, FoodRecord, PhysicalActivity, MealType, ActivityIntensity } from '@/types';
+import { encrypt, decrypt } from '@/utils/encryption';
 
-export interface INutritionalAssessment extends Omit<NutritionalAssessment, 'id' | 'patientId' | 'studentId'>, Document {
+export interface INutritionalAssessment extends Omit<NutritionalAssessment, 'id' | 'patientId' | 'nutritionistId'>, Document {
   _id: string;
   patientId: Types.ObjectId;
-  studentId: Types.ObjectId;
+  nutritionistId: Types.ObjectId; // Atualizado para nutritionistId
 }
 
 const skinfoldMeasurementSchema = new Schema({
@@ -62,25 +63,16 @@ const physicalActivitySchema = new Schema<PhysicalActivity>({
   sedentaryTime: { type: Number, required: true, min: 0, max: 24 }
 }, { _id: false });
 
-const labResultSchema = new Schema<LabResult>({
-  testName: { type: String, required: true },
-  value: { type: Number, required: true },
-  unit: { type: String, required: true },
-  referenceRange: { type: String, required: true },
-  date: { type: Date, required: true },
-  status: { type: String, enum: Object.values(LabResultStatus), required: true }
-});
-
 const nutritionalAssessmentSchema = new Schema<INutritionalAssessment>({
   patientId: {
     type: Schema.Types.ObjectId,
     ref: 'Patient',
     required: [true, 'ID do paciente é obrigatório']
   },
-  studentId: {
+  nutritionistId: {
     type: Schema.Types.ObjectId,
     ref: 'User',
-    required: [true, 'ID do aluno é obrigatório']
+    required: [true, 'ID do nutricionista é obrigatório']
   },
   anthropometricData: {
     type: anthropometricDataSchema,
@@ -94,19 +86,23 @@ const nutritionalAssessmentSchema = new Schema<INutritionalAssessment>({
     type: physicalActivitySchema,
     default: null
   },
-  labResults: [labResultSchema],
   observations: {
     type: String,
-    trim: true
+    trim: true,
+    // Criptografia para observações sensíveis
+    set: encrypt,
+    get: decrypt
   }
 }, {
   timestamps: true,
-  versionKey: false
+  versionKey: false,
+  toJSON: { getters: true },
+  toObject: { getters: true }
 });
 
 // Indexes
 nutritionalAssessmentSchema.index({ patientId: 1 });
-nutritionalAssessmentSchema.index({ studentId: 1 });
+nutritionalAssessmentSchema.index({ nutritionistId: 1 }); 
 nutritionalAssessmentSchema.index({ createdAt: -1 });
 
 // Transform function
@@ -116,7 +112,7 @@ nutritionalAssessmentSchema.set('toJSON', {
     delete ret._id;
     delete ret.__v;
     if (ret.patientId) ret.patientId = ret.patientId.toString();
-    if (ret.studentId) ret.studentId = ret.studentId.toString();
+    if (ret.nutritionistId) ret.nutritionistId = ret.nutritionistId.toString();
     return ret;
   }
 });

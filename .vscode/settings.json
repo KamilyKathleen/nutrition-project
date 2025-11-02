@@ -2,14 +2,20 @@
     "typescript.tsdk": "node_modules\\typescript\\lib",
     "cSpell.words": [
         "adipiscing",
+        "ADMINPASSWORD",
+        "ADMINUSERNAME",
         "amet",
+        "BASICAUTH",
         "commodo",
         "congue",
         "consectetuer",
+        "crashar",
         "elit",
         "enim",
         "Fusce",
         "imperdiet",
+        "initdb",
+        "INITDB",
         "lectus",
         "LGPD",
         "malesuada",
@@ -19,6 +25,8 @@
         "porttitor",
         "posuere",
         "purus",
+        "skinfold",
+        "suprailiac",
         "ultricies"
     ]
 }

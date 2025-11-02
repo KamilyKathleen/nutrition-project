@@ -18,9 +18,9 @@ export class UserController {
    */
   list = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // Extrair parâmetros de query (página, limite, filtro por role)
-    const page = parseInt(req.query.page as string) || 1;
+    const page = Number.parseInt(req.query.page as string) || 1;
     const limit = Math.min(
-      parseInt(req.query.limit as string) || config.DEFAULT_PAGE_SIZE,
+      Number.parseInt(req.query.limit as string) || config.DEFAULT_PAGE_SIZE,
       config.MAX_PAGE_SIZE
     );
     const role = req.query.role as UserRole | undefined;
