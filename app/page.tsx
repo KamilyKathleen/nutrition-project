@@ -1,7 +1,7 @@
 import Image from "next/image";
 import LoremIpsum from "@/app/components/loremIpsum";
 import Placeholder from "@/app/img/placeholder.webp";
-import Banner from "@/app/img/banner.jpeg";
+import Banner from "@/app/img/banner.jpg";
 import Link from "next/link";
 import Card from "@/app/components/card";
 
@@ -10,7 +10,7 @@ interface WhyUsCardProps {
   description: string;
 }
 
-function WhyUsCard({ title, description }: WhyUsCardProps) {
+function WhyUsCard({ title, description }: Readonly<WhyUsCardProps>) {
   return (
     <div className="m-4 p-6 text-center flex flex-col h-full max-w-[400px] mx-auto">
       <h3 className="text-lg text-petroleumGreen font-semibold pb-6 uppercase">{title}</h3>

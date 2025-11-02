@@ -1,0 +1,68 @@
+# 🐳 Docker Compose para MongoDB
+# Por que usar Docker Compose?
+# - Orquestra múltiplos containers
+# - Configuração declarativa
+# - Fácil de versionar no Git
+# - Reproduzível em qualquer ambiente
+
+version: '3.8'
+
+services:
+  # 🍃 MongoDB Database
+  mongodb:
+    image: mongo:7.0              # Versão estável mais recente
+    container_name: nutrition-mongo
+    restart: always               # Reinicia se crashar
+    
+    # 🔒 Configurações de Segurança
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: nutrition_admin
+      MONGO_INITDB_ROOT_PASSWORD: nutrition_2024_secure
+      MONGO_INITDB_DATABASE: nutrition_db
+    
+    # 🔌 Mapeamento de Portas
+    ports:
+      - "27017:27017"             # localhost:27017 -> container:27017
+    
+    # 💾 Persistência de Dados
+    volumes:
+      - mongodb_data:/data/db     # Volume nomeado para persistir dados
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    
+    # 🌐 Rede interna
+    networks:
+      - nutrition_network
+
+  # 🖥️ MongoDB Express (Interface Web - Opcional)
+  mongo-express:
+    image: mongo-express:1.0.0-alpha
+    container_name: nutrition-mongo-express
+    restart: always
+    
+    # 🔗 Dependências
+    depends_on:
+      - mongodb
+    
+    # 🔒 Configurações de Acesso
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: nutrition_admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: nutrition_2024_secure
+      ME_CONFIG_MONGODB_URL: mongodb://nutrition_admin:nutrition_2024_secure@mongodb:27017/
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin123
+    
+    # 🔌 Interface Web
+    ports:
+      - "8081:8081"               # http://localhost:8081
+    
+    networks:
+      - nutrition_network
+
+# 💾 Volumes Nomeados
+volumes:
+  mongodb_data:                   # Persiste dados mesmo se container for removido
+
+# 🌐 Redes
+networks:
+  nutrition_network:              # Rede interna para comunicação entre containers
+    driver: bridge
