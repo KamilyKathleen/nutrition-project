@@ -4,12 +4,14 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Environment variables
+# Environment variables (but allow examples)
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+.env.docker
+!.env.*.example
 
 # Build outputs
 dist/
