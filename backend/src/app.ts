@@ -16,6 +16,10 @@ import { consultationRoutes } from '@/routes/consultationRoutes';
 import { blogRoutes } from '@/routes/blogRoutes';
 import { reportRoutes } from '@/routes/reportRoutes';
 import auditRoutes from '@/routes/auditRoutes';
+import { notificationRoutes } from '@/routes/notificationRoutes';
+import metricRoutes from '@/routes/metricRoutes';
+import { exportRoutes } from '@/routes/exportRoutes';
+import { metricsMiddleware, systemMetricsMiddleware } from '@/middlewares/metricsBasic';
 import { connectToDatabase } from '@/config/database';
 
 const app = express();
@@ -39,6 +43,9 @@ app.use(cors({
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Métricas middleware
+app.use(metricsMiddleware);
 
 // Logging
 if (config.NODE_ENV !== 'test') {
@@ -64,6 +71,9 @@ app.use('/api/consultations', consultationRoutes);
 app.use('/api/blog', blogRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/audit', auditRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/metrics', metricRoutes);
+app.use('/api/exports', exportRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
@@ -76,4 +86,9 @@ app.use('*', (req, res) => {
 // Error handler
 app.use(errorHandler);
 
-export { app };
+// Inicializar métricas de sistema
+if (config.NODE_ENV !== 'test') {
+  systemMetricsMiddleware();
+}
+
+export default app;
