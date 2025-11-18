@@ -29,7 +29,7 @@ export default function Home() {
           <div className="absolute inset-0 flex flex-col justify-center items-center text-center">
             <h1 className="text-white text-4xl md:text-5xl py-4 font-bold uppercase mb-4">Título chamativo</h1>
             <p className="text-white text-2xl py-4">Frase de efeito sobre o propósito do site.</p>
-            <p className="text-lg text-white italic py-4">&quot;Frase de efeito&quot;</p>
+            <p className="text-lg text-white italic py-4">&quot;Transforme sua alimentação, transforme sua vida.&quot;</p>
             <Link
               href='/pages/test'
               className="mt-6 px-12 py-3 font-semibold bg-mintGreen text-coalGray rounded hover:bg-petroleumGreen hover:text-white transition flex items-center justify-center"
