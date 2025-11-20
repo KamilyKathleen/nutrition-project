@@ -11,9 +11,10 @@ interface CardProps {
     title: string;
     subtitle: string;
     page: string;
+    button: string;
 }
 
-export default function Card({ image, description, title, subtitle, page }: CardProps) {
+export default function Card({ image, description, title, subtitle, page, button }: CardProps) {
 
     return (
         <div className="rounded-lg shadow-lg max-w-[350px] mx-auto">
@@ -36,7 +37,7 @@ export default function Card({ image, description, title, subtitle, page }: Card
                     >
 
                         <FaPlus className="size-3 mr-2" />
-                        Saiba Mais
+                        {button}
                     </Link>
                 </div>
             </div>

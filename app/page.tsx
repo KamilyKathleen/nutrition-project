@@ -27,8 +27,8 @@ export default function Home() {
         <Image src={Banner} alt="Banner" className='object-cover' fill priority />
         <div className="absolute inset-0 bg-coalGray/60 z-10">
           <div className="absolute inset-0 flex flex-col justify-center items-center text-center">
-            <h1 className="text-white text-4xl md:text-5xl py-4 font-bold uppercase mb-4">Título chamativo</h1>
-            <p className="text-white text-2xl py-4">Frase de efeito sobre o propósito do site.</p>
+            <h1 className="text-white text-4xl md:text-5xl py-4 font-bold uppercase mb-4">Nutriplan</h1>
+            <p className="text-white text-2xl py-4">Planejamento e Avaliação de Dietas</p>
             <p className="text-lg text-white italic py-4">&quot;Transforme sua alimentação, transforme sua vida.&quot;</p>
             <Link
               href='/pages/test'
@@ -61,20 +61,20 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mx-auto justify-center items-center py-3">
               <div>
                 <WhyUsCard
-                  title="Título do Card"
-                  description="Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
+                  title="Consumo Alimentar"
+                  description="Registre suas refeições para que seu nutricionista possa criar um plano de dietas personalizado somente para você!"
                 />
               </div>
               <div className="md:border-x md:border-y-transparent border-y border-mintGreen">
                 <WhyUsCard
-                  title="Título do Card"
+                  title="Exercícios Físicos"
                   description="Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
                 />
               </div>
               <div>
                 <WhyUsCard
-                  title="Título do Card"
-                  description="Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
+                  title="Acompanhamento de Progresso"
+                  description="Acompanhe o seu progresso e exporte seus dados em relatórios PDF ou Excel."
                 />
               </div>
             </div>
@@ -98,6 +98,7 @@ export default function Home() {
               subtitle="Página"
               description="Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Maecenas porttitor congue massa."
               page="/pages/test"
+              button="Saiba mais"
             />
             <Card
               image={Placeholder}
@@ -105,6 +106,7 @@ export default function Home() {
               subtitle="Página"
               description="Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Maecenas porttitor congue massa."
               page="/pages/test"
+              button="Saiba mais"
             />
             <Card
               image={Placeholder}
@@ -112,6 +114,7 @@ export default function Home() {
               subtitle="Página"
               description="Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Maecenas porttitor congue massa."
               page="/pages/test"
+              button="Saiba mais"
             />
           </div>
         </div>

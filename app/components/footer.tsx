@@ -24,25 +24,25 @@ export default function Footer() {
                         <div className="flex flex-col gap-2">
                             <Link
                                 href="/"
-                                className="text-xl text-coalGray hover:underline"
+                                className="text-xl font-semibold text-petroleumGreen hover:underline"
                             >
                                 Home
                             </Link>
                             <Link
                                 href='/pages/frequentlyAsked'
-                                className="text-xl text-coalGray hover:underline"
+                                className="text-xl font-semibold text-petroleumGreen hover:underline"
                             >
                                 Perguntas Frequentes
                             </Link>
                             <Link
                                 href='/pages/dashboard'
-                                className="text-xl text-coalGray hover:underline"
+                                className="text-xl font-semibold text-petroleumGreen hover:underline"
                             >
                                 Dashboard
                             </Link>
                             <Link
                                 href='/pages/blog'
-                                className="text-xl text-coalGray hover:underline"
+                                className="text-xl font-semibold text-petroleumGreen hover:underline"
                             >
                                 Blog
                             </Link>
@@ -51,16 +51,18 @@ export default function Footer() {
                     <div className="w-full flex items-center justify-center">
                         <div className="flex gap-8">
                             <Link
-                                href='/pages/test'
-                                className="px-4 py-2 font-semibold bg-white text-petroleumGreen rounded hover:bg-petroleumGreen hover:text-white transition flex items-center justify-center"
+                                href="https://www.instagram.com/nutriunasete?igsh=MWkwMjJzNnh4aHdrcA=="
+                                target="_blank"
+                                className="px-4 py-2 font-semibold bg-petroleumGreen text-white rounded hover:bg-white hover:text-petroleumGreen transition flex items-center justify-center"
                             >
-                                Botão Importante
+                                <FaInstagram size={32} />
+                                &nbsp; NutriUnaSete
                             </Link>
                         </div>
                     </div>
                 </div>
                 <div className="w-full mt-4 text-gray-500 pt-4">
-                    <p className="text-coalGray">&copy; {new Date().getFullYear()} NutriPlan Una. Todos os direitos reservados.</p>
+                    <p className="text-petroleumGreen font-bold">&copy; {new Date().getFullYear()} NutriPlan Una. Todos os direitos reservados.</p>
                 </div>
             </div>
         </footer>
