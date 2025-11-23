@@ -1,7 +1,7 @@
 import { Response } from 'express';
-import { PatientService } from '@/services/PatientService';
-import { asyncHandler } from '@/middlewares/errorHandler';
-import { AuthenticatedRequest } from '@/types';
+import { PatientService } from '../services/PatientService';
+import { asyncHandler } from '../middlewares/errorHandler';
+import { AuthenticatedRequest } from '../types';
 
 /**
  * 🏥 PATIENT CONTROLLER

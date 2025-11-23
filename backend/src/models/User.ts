@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { User, UserRole } from '@/types';
+import { User, UserRole } from '../types';
 
 export interface IUser extends Omit<User, 'id'>, Document {
   _id: string;
@@ -26,35 +26,15 @@ const userSchema = new Schema<IUser>({
       message: 'Email inválido'
     }
   },
-  cpf: {
-    type: String,
-    required: [true, 'CPF é obrigatório'],
-    unique: true,
-    validate: {
-      validator: function(cpf: string) {
-        return /^\d{11}$/.test(cpf);
-      },
-      message: 'CPF deve ter 11 dígitos'
-    }
-  },
-  phone: {
-    type: String,
-    required: [true, 'Telefone é obrigatório'],
-    validate: {
-      validator: function(phone: string) {
-        return /^\d{10,15}$/.test(phone);
-      },
-      message: 'Telefone deve ter entre 10 e 15 dígitos'
-    }
-  },
+  // 🔥 CPF e phone removidos para usuários Firebase básicos
+  // Usuários Firebase são identificados apenas por firebaseUid
   crn: {
     type: String,
-    required: function() {
+    required: function(this: IUser): boolean {
       return this.role === 'nutritionist';
     },
     validate: {
       validator: function(crn: string) {
-        // 🔍 CRN formato: CRN-X/XXXX (ex: CRN-3/1234)
         return !crn || /^CRN-\d\/\d{4,5}$/.test(crn);
       },
       message: 'CRN deve ter formato válido (ex: CRN-3/1234)'
@@ -64,7 +44,7 @@ const userSchema = new Schema<IUser>({
     type: String,
     required: [true, 'Senha é obrigatória'],
     minlength: [8, 'Senha deve ter pelo menos 8 caracteres'],
-    maxlength: [128, 'Senha deve ter no máximo 128 caracteres']
+    maxlength: [12, 'Senha deve ter no máximo 12 caracteres']
   },
   role: {
     type: String,
@@ -82,6 +62,17 @@ const userSchema = new Schema<IUser>({
   lastLogin: {
     type: Date,
     default: null
+  },
+  // 🔥 Firebase fields - OBRIGATÓRIOS para usuários Firebase
+  firebaseUid: {
+    type: String,
+    required: [true, 'Firebase UID é obrigatório'],
+    unique: true,
+    index: true
+  },
+  emailVerified: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true, // Automatically manage createdAt and updatedAt

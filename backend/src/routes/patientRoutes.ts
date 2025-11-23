@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { PatientController } from '@/controllers/PatientController';
-import { authenticate } from '@/middlewares/auth';
-import { validate, validateQuery } from '@/middlewares/validation';
-import { auditPatientAccess, auditPatientList, auditMedicalDataAccess } from '@/middlewares/auditMiddleware';
+import { PatientController } from '../controllers/PatientController';
+import { authenticate } from '../middlewares/auth';
+import { validate, validateQuery } from '../middlewares/validation';
+import { auditPatientAccess, auditPatientList, auditMedicalDataAccess } from '../middlewares/auditMiddleware';
 import Joi from 'joi';
 
 const router = Router();

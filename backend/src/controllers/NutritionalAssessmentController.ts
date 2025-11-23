@@ -5,8 +5,8 @@
  */
 
 import { Response } from 'express';
-import { AuthenticatedRequest } from '@/middlewares/auth';
-import NutritionalAssessmentService, { CreateAssessmentRequest, UpdateAssessmentRequest } from '@/services/NutritionalAssessmentService';
+import { AuthenticatedRequest } from '../middlewares/auth';
+import NutritionalAssessmentService, { CreateAssessmentRequest, UpdateAssessmentRequest } from '../services/NutritionalAssessmentService';
 
 /**
  * 📊 CONTROLLER DE AVALIAÇÃO NUTRICIONAL

@@ -3,24 +3,24 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import compression from 'compression';
-import { config } from '@/config/environment';
-import { errorHandler } from '@/middlewares/errorHandler';
-import { rateLimiter } from '@/middlewares/rateLimiter';
-import { auditSensitiveAccess } from '@/middlewares/auditMiddleware';
-import { authRoutes } from '@/routes/authRoutes';
-import { userRoutes } from '@/routes/userRoutes';
-import { patientRoutes } from '@/routes/patientRoutes';
-import { nutritionalAssessmentRoutes } from '@/routes/nutritionalAssessmentRoutes';
-import { dietPlanRoutes } from '@/routes/dietPlanRoutes';
-import { consultationRoutes } from '@/routes/consultationRoutes';
-import { blogRoutes } from '@/routes/blogRoutes';
-import { reportRoutes } from '@/routes/reportRoutes';
-import auditRoutes from '@/routes/auditRoutes';
-import { notificationRoutes } from '@/routes/notificationRoutes';
-import metricRoutes from '@/routes/metricRoutes';
-import { exportRoutes } from '@/routes/exportRoutes';
-import { metricsMiddleware, systemMetricsMiddleware } from '@/middlewares/metricsBasic';
-import { connectToDatabase } from '@/config/database';
+import { config } from './config/environment';
+import { errorHandler } from './middlewares/errorHandler';
+import { rateLimiter } from './middlewares/rateLimiter';
+import { authRoutes } from './routes/authRoutes';
+import firebaseAuthRoutes from './routes/firebaseAuth';
+import { userRoutes } from './routes/userRoutes';
+import { patientRoutes } from './routes/patientRoutes';
+import { nutritionalAssessmentRoutes } from './routes/nutritionalAssessmentRoutes';
+import { dietPlanRoutes } from './routes/dietPlanRoutes';
+import { consultationRoutes } from './routes/consultationRoutes';
+import { blogRoutes } from './routes/blogRoutes';
+import { reportRoutes } from './routes/reportRoutes';
+import auditRoutes from './routes/auditRoutes';
+import { notificationRoutes } from './routes/notificationRoutes';
+import metricRoutes from './routes/metricRoutes';
+import { exportRoutes } from './routes/exportRoutes';
+import { metricsMiddleware, systemMetricsMiddleware } from './middlewares/metricsBasic';
+import { connectToDatabase } from './config/database';
 
 const app = express();
 
@@ -63,6 +63,7 @@ app.get('/health', (req, res) => {
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/auth/firebase', firebaseAuthRoutes); // 🔥 Firebase Auth
 app.use('/api/users', userRoutes);
 app.use('/api/patients', patientRoutes);
 app.use('/api/nutritional-assessments', nutritionalAssessmentRoutes);

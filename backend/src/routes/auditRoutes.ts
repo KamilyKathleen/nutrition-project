@@ -21,7 +21,7 @@ router.use(authenticate);
  * 📊 RELATÓRIOS DE ATIVIDADE - Admin/Nutritionist
  */
 router.get('/activity', 
-  authorize(UserRole.ADMIN, UserRole.NUTRITIONIST),
+  authorize([UserRole.ADMIN, UserRole.NUTRITIONIST]),
   auditController.getActivityReport
 );
 

@@ -5,10 +5,10 @@
  */
 
 import { Request, Response, NextFunction } from 'express';
-import { AuthenticatedRequest } from '@/middlewares/auth';
-import { MetricService } from '@/services/MetricService';
-import { AppError } from '@/middlewares/errorHandler';
-import { MetricType } from '@/models/Metric';
+import { AuthenticatedRequest } from '../middlewares/auth';
+import { MetricService } from '../services/MetricService';
+import { AppError } from '../middlewares/errorHandler';
+import { MetricType } from '../models/Metric';
 
 export class MetricController {
 

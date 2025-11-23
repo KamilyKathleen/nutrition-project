@@ -1,5 +1,5 @@
-import { PatientInviteModel } from '@/models/PatientInvite';
-import { AppError } from '@/middlewares/errorHandler';
+import { PatientInviteModel } from '../models/PatientInvite';
+import { AppError } from '../middlewares/errorHandler';
 import crypto from 'node:crypto';
 import mongoose from 'mongoose';
 
@@ -76,7 +76,7 @@ export class PatientInviteService {
         patientEmail: savedInvite.patientEmail || '',
         patientName: savedInvite.patientName || '',
         inviteToken: savedInvite.inviteToken,
-        status: savedInvite.status,
+        status: savedInvite.status as any,
         expiresAt: savedInvite.expiresAt,
         sentAt: savedInvite.sentAt,
         acceptedAt: savedInvite.acceptedAt,
@@ -116,7 +116,7 @@ export class PatientInviteService {
         patientEmail: invite.patientEmail || '',
         patientName: invite.patientName || '',
         inviteToken: invite.inviteToken,
-        status: invite.status,
+        status: invite.status as any,
         expiresAt: invite.expiresAt,
         sentAt: invite.sentAt,
         ...(invite.acceptedAt && { acceptedAt: invite.acceptedAt }),
@@ -147,7 +147,7 @@ export class PatientInviteService {
         patientEmail: invite.patientEmail || '',
         patientName: invite.patientName || '',
         inviteToken: invite.inviteToken,
-        status: invite.status,
+        status: invite.status as any,
         expiresAt: invite.expiresAt,
         sentAt: invite.sentAt,
         acceptedAt: invite.acceptedAt,
@@ -171,17 +171,17 @@ export class PatientInviteService {
         throw new AppError('Convite não encontrado', 404);
       }
 
-      if (invite.status !== 'PENDING') {
+      if ((invite as any).status !== 'PENDING') {
         throw new AppError('Este convite não está mais válido', 400);
       }
 
       if (invite.expiresAt < new Date()) {
-        invite.status = 'EXPIRED';
+        (invite as any).status = 'EXPIRED';
         await invite.save();
         throw new AppError('Este convite expirou', 400);
       }
 
-      invite.status = 'ACCEPTED';
+      (invite as any).status = 'ACCEPTED';
       invite.acceptedAt = new Date();
       await invite.save();
 
@@ -191,7 +191,7 @@ export class PatientInviteService {
         patientEmail: invite.patientEmail || '',
         patientName: invite.patientName || '',
         inviteToken: invite.inviteToken,
-        status: invite.status,
+        status: invite.status as any,
         expiresAt: invite.expiresAt,
         sentAt: invite.sentAt,
         acceptedAt: invite.acceptedAt,
@@ -221,11 +221,11 @@ export class PatientInviteService {
         throw new AppError('Convite não encontrado', 404);
       }
 
-      if (invite.status !== 'PENDING') {
+      if ((invite as any).status !== 'PENDING') {
         throw new AppError('Apenas convites pendentes podem ser cancelados', 400);
       }
 
-      invite.status = 'CANCELLED';
+      (invite as any).status = 'CANCELLED';
       await invite.save();
     } catch (error: any) {
       if (error instanceof AppError) {

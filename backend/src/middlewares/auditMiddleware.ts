@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { AuthenticatedRequest } from '@/middlewares/auth';
-import { AuditService } from '@/services/AuditService';
+import { AuthenticatedRequest } from './auth';
+import { AuditService } from '../services/AuditService';
 
 /**
  * 📋 MIDDLEWARE DE AUDITORIA PARA DADOS SENSÍVEIS

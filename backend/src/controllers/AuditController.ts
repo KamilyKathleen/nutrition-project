@@ -1,6 +1,6 @@
 import { Response } from 'express';
-import { AuthenticatedRequest } from '@/middlewares/auth';
-import { AuditService } from '@/services/AuditService';
+import { AuthenticatedRequest } from '../middlewares/auth';
+import { AuditService } from '../services/AuditService';
 
 /**
  * 📋 CONTROLLER DE AUDITORIA E RELATÓRIOS DE SEGURANÇA

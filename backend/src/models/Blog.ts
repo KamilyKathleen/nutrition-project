@@ -6,7 +6,6 @@
 
 import mongoose, { Document, Schema } from 'mongoose';
 import { IUser } from './User';
-import { auditSchema } from '@/utils/auditUtils';
 
 /**
  * 🏷️ TIPOS DE CATEGORIA DE CONTEÚDO
@@ -49,23 +48,17 @@ export interface IBlog extends Document {
   status: BlogStatus;
   author: mongoose.Types.ObjectId | IUser;
   views: number;
-  likes: number;
   publishedAt?: Date;
   seoTitle?: string;
   seoDescription?: string;
   readingTime: number; // em minutos
   isHighlighted: boolean;
-  relatedPosts: mongoose.Types.ObjectId[];
   
-  // Auditoria
-  auditInfo: typeof auditSchema;
   createdAt: Date;
   updatedAt: Date;
 
   // Métodos
   incrementViews(): Promise<IBlog>;
-  incrementLikes(): Promise<IBlog>;
-  decrementLikes(): Promise<IBlog>;
   isPublished(): boolean;
 }
 
@@ -160,12 +153,6 @@ const blogSchema = new Schema<IBlog>({
     min: [0, 'Visualizações não podem ser negativas']
   },
   
-  likes: {
-    type: Number,
-    default: 0,
-    min: [0, 'Curtidas não podem ser negativas']
-  },
-  
   publishedAt: {
     type: Date
   },
@@ -187,26 +174,7 @@ const blogSchema = new Schema<IBlog>({
     required: true,
     min: [1, 'Tempo de leitura deve ser pelo menos 1 minuto'],
     max: [60, 'Tempo de leitura não pode exceder 60 minutos']
-  },
-  
-  isHighlighted: {
-    type: Boolean,
-    default: false
-  },
-  
-  relatedPosts: [{
-    type: Schema.Types.ObjectId,
-    ref: 'Blog',
-    validate: {
-      validator: function(v: mongoose.Types.ObjectId[]) {
-        return v.length <= 5;
-      },
-      message: 'Máximo de 5 posts relacionados permitidos'
-    }
-  }],
-  
-  // Auditoria
-  auditInfo: auditSchema
+  }
 }, {
   timestamps: true,
   toJSON: {
@@ -311,23 +279,7 @@ blogSchema.methods.incrementViews = async function() {
   return await this.save({ validateBeforeSave: false });
 };
 
-/**
- * 👍 Incrementar curtidas
- */
-blogSchema.methods.incrementLikes = async function() {
-  this.likes += 1;
-  return await this.save({ validateBeforeSave: false });
-};
 
-/**
- * 👎 Decrementar curtidas
- */
-blogSchema.methods.decrementLikes = async function() {
-  if (this.likes > 0) {
-    this.likes -= 1;
-  }
-  return await this.save({ validateBeforeSave: false });
-};
 
 /**
  * 📅 Verificar se está publicado
@@ -351,18 +303,7 @@ blogSchema.statics.findPublished = function(filter = {}) {
   }).sort({ publishedAt: -1 });
 };
 
-/**
- * 🔍 Buscar posts em destaque
- */
-blogSchema.statics.findHighlighted = function(limit = 5) {
-  return this.find({
-    status: BlogStatus.PUBLISHED,
-    isHighlighted: true,
-    publishedAt: { $lte: new Date() }
-  })
-  .sort({ publishedAt: -1 })
-  .limit(limit);
-};
+
 
 /**
  * 🔍 Buscar por categoria

@@ -6,11 +6,11 @@
 
 import { Router } from 'express';
 import { body, query, param } from 'express-validator';
-import ConsultationController from '@/controllers/ConsultationController';
-import { authenticate, authorize } from '@/middlewares/auth';
-import { auditSensitiveAccess } from '@/middlewares/auditMiddleware';
-import { AppError } from '@/middlewares/errorHandler';
-import { UserRole } from '@/types';
+import ConsultationController from '../controllers/ConsultationController';
+import { authenticate, authorize } from '../middlewares/auth';
+import { auditSensitiveAccess } from '../middlewares/auditMiddleware';
+import { AppError } from '../middlewares/errorHandler';
+import { UserRole } from '../types';
 
 const router = Router();
 

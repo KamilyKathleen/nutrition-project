@@ -7,7 +7,6 @@
 import * as nodemailer from 'nodemailer';
 import { Transporter } from 'nodemailer';
 import { 
-  NotificationModel, 
   NotificationType, 
   NotificationStatus, 
   INotification 

@@ -1,11 +1,11 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { AuthService } from '@/services/AuthService';
-import { UserService } from '@/services/UserService';
-import { config } from '@/config/environment';
-import { AppError, asyncHandler } from '@/middlewares/errorHandler';
-import { ApiResponse, LoginRequest, CreateUserRequest, JwtPayload } from '@/types';
+import { AuthService } from '../services/AuthService';
+import { UserService } from '../services/UserService';
+import { config } from '../config/environment';
+import { AppError, asyncHandler } from '../middlewares/errorHandler';
+import { ApiResponse, LoginRequest, CreateUserRequest, JwtPayload } from '../types';
 
 export class AuthController {
   private readonly authService: AuthService;

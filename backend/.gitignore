@@ -10,8 +10,17 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
-.env.docker
+.env.production
+.env.development
+.env.staging
+
+# Allow example templates
+!config/env-templates/.env.*.example
 !.env.*.example
+
+# Docker env files (except in deployment)
+.env.docker
+!deployment/.env.docker
 
 # Build outputs
 dist/
@@ -67,3 +76,13 @@ Thumbs.db
 # Temporary files
 tmp/
 temp/
+.vercel
+
+# Scripts de desenvolvimento arquivados
+scripts/archived/
+
+# Arquivos de teste temporários
+test-*.js
+teste-*.js
+diagnostico-*.js
+resumo-*.js

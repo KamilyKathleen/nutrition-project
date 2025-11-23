@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
-import { NutritionalAssessment, AnthropometricData, FoodRecord, PhysicalActivity, MealType, ActivityIntensity } from '@/types';
-import { encrypt, decrypt } from '@/utils/encryption';
+import { NutritionalAssessment, AnthropometricData, FoodRecord, PhysicalActivity, MealType, ActivityIntensity } from '../types';
+import { encrypt, decrypt } from '../utils/encryption';
 
 export interface INutritionalAssessment extends Omit<NutritionalAssessment, 'id' | 'patientId' | 'nutritionistId'>, Document {
   _id: string;

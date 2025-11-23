@@ -4,10 +4,10 @@
  * Gerenciamento completo de planos alimentares
  */
 
-import { DietPlanModel } from '@/models/DietPlan';
-import { PatientModel } from '@/models/Patient';
-import { AppError } from '@/middlewares/errorHandler';
-import { DietPlan } from '@/types';
+import { DietPlanModel } from '../models/DietPlan';
+import { PatientModel } from '../models/Patient';
+import { AppError } from '../middlewares/errorHandler';
+import { DietPlan } from '../types';
 import mongoose from 'mongoose';
 
 export interface CreateDietPlanRequest {

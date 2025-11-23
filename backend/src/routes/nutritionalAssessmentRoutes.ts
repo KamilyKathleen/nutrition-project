@@ -5,11 +5,11 @@
  */
 
 import { Router } from 'express';
-import { NutritionalAssessmentController } from '@/controllers/NutritionalAssessmentController';
-import { authenticate, authorize } from '@/middlewares/auth';
-import { validate } from '@/middlewares/validation';
-import { auditSensitiveAccess } from '@/middlewares/auditMiddleware';
-import { UserRole } from '@/types';
+import { NutritionalAssessmentController } from '../controllers/NutritionalAssessmentController';
+import { authenticate, authorize } from '../middlewares/auth';
+import { validate } from '../middlewares/validation';
+import { auditSensitiveAccess } from '../middlewares/auditMiddleware';
+import { UserRole } from '../types';
 import Joi from 'joi';
 
 const router = Router();
@@ -78,7 +78,7 @@ const updateAssessmentSchema = createAssessmentSchema.fork(['patientId', 'anthro
  * 🔐 APLICAR AUTENTICAÇÃO E AUTORIZAÇÃO
  */
 router.use(authenticate);
-router.use(authorize(UserRole.NUTRITIONIST, UserRole.ADMIN));
+router.use(authorize([UserRole.NUTRITIONIST, UserRole.ADMIN]));
 
 /**
  * ➕ CRIAR AVALIAÇÃO NUTRICIONAL

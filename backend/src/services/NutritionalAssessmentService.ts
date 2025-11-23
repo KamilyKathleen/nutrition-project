@@ -1,7 +1,7 @@
-import { NutritionalAssessmentModel } from '@/models/NutritionalAssessment';
-import { PatientModel } from '@/models/Patient';
-import { AppError } from '@/middlewares/errorHandler';
-import { NutritionalAssessment } from '@/types';
+import { NutritionalAssessmentModel } from '../models/NutritionalAssessment';
+import { PatientModel } from '../models/Patient';
+import { AppError } from '../middlewares/errorHandler';
+import { NutritionalAssessment } from '../types';
 import mongoose from 'mongoose';
 
 export interface CreateAssessmentRequest {

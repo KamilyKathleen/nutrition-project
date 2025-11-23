@@ -5,8 +5,8 @@
  */
 
 import { Response } from 'express';
-import { AuthenticatedRequest } from '@/middlewares/auth';
-import DietPlanService, { CreateDietPlanRequest, UpdateDietPlanRequest } from '@/services/DietPlanService';
+import { AuthenticatedRequest } from '../middlewares/auth';
+import DietPlanService, { CreateDietPlanRequest, UpdateDietPlanRequest } from '../services/DietPlanService';
 
 /**
  * 🍽️ CONTROLLER DE PLANOS DIETÉTICOS

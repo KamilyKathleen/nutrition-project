@@ -12,7 +12,6 @@ import {
   INotification 
 } from '../models/Notification';
 import { EmailService } from './EmailService';
-import { UserModel } from '../models/User';
 import Bull from 'bull';
 
 /**

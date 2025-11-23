@@ -9,7 +9,7 @@ export interface IPatientInvite extends Document {
   patientEmail?: string;
   patientName?: string;
   inviteToken: string;
-  status: 'PENDING' | 'ACCEPTED' | 'EXPIRED' | 'CANCELLED';
+  status: 'pending' | 'accepted' | 'rejected' | 'expired';
   expiresAt: Date;
   sentAt: Date;
   acceptedAt?: Date;
@@ -50,7 +50,7 @@ const patientInviteSchema = new Schema<IPatientInvite>({
     type: String,
     enum: ['PENDING', 'ACCEPTED', 'EXPIRED', 'CANCELLED'],
     default: 'PENDING'
-  },
+  } as any,
   expiresAt: {
     type: Date,
     required: true,
@@ -74,8 +74,9 @@ const patientInviteSchema = new Schema<IPatientInvite>({
 
 // Validação: deve ter email OU nome
 patientInviteSchema.pre('validate', function() {
-  if (!this.patientEmail && !this.patientName) {
-    this.invalidate('patientEmail', 'Email ou nome do paciente é obrigatório');
+  const doc = this as any;
+  if (!doc.patientEmail && !doc.patientName) {
+    doc.invalidate('patientEmail', 'Email ou nome do paciente é obrigatório');
   }
 });
 

@@ -1,6 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { Patient, Gender, Address } from '@/types';
-import { encrypt, decrypt } from '@/utils/encryption';
+import { Patient, Gender, Address } from '../types';
 
 export interface IPatient extends Omit<Patient, 'id' | 'nutritionistId'>, Document {
   _id: string;
@@ -77,28 +76,6 @@ const patientSchema = new Schema<IPatient>({
     type: addressSchema,
     default: null
   },
-  medicalHistory: {
-    type: String,
-    trim: true,
-    set: encrypt,
-    get: decrypt
-  },
-  allergies: [{
-    type: String,
-    trim: true,
-    set: encrypt,
-    get: decrypt
-  }],
-  medications: [{
-    type: String,
-    trim: true,
-    set: encrypt,
-    get: decrypt
-  }],
-  nutritionalGoals: [{
-    type: String,
-    trim: true
-  }],
   notes: {
     type: String,
     trim: true

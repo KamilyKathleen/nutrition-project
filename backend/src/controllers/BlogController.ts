@@ -5,9 +5,9 @@
  */
 
 import { Request, Response, NextFunction } from 'express';
-import BlogService from '@/services/BlogService';
-import { BlogCategory, BlogStatus } from '@/models/Blog';
-import { AppError } from '@/middlewares/errorHandler';
+import BlogService from '../services/BlogService';
+import { BlogCategory, BlogStatus } from '../models/Blog';
+import { AppError } from '../middlewares/errorHandler';
 
 interface AuthRequest extends Request {
   user?: {
@@ -395,61 +395,7 @@ class BlogController {
     }
   }
 
-  /**
-   * 👍 Curtir post
-   */
-  async likePost(req: AuthRequest, res: Response, next: NextFunction) {
-    try {
-      const { id } = req.params;
-      const userId = req.user?.id;
-      
-      if (!userId) {
-        return next(new AppError('Usuário não autenticado', 401));
-      }
 
-      if (!id) {
-        return next(new AppError('ID do post é obrigatório', 400));
-      }
-
-      const post = await BlogService.likePost(id, userId);
-
-      res.json({
-        success: true,
-        message: 'Post curtido com sucesso',
-        data: { likes: post.likes }
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  /**
-   * 👎 Descurtir post
-   */
-  async unlikePost(req: AuthRequest, res: Response, next: NextFunction) {
-    try {
-      const { id } = req.params;
-      const userId = req.user?.id;
-      
-      if (!userId) {
-        return next(new AppError('Usuário não autenticado', 401));
-      }
-
-      if (!id) {
-        return next(new AppError('ID do post é obrigatório', 400));
-      }
-
-      const post = await BlogService.unlikePost(id, userId);
-
-      res.json({
-        success: true,
-        message: 'Curtida removida com sucesso',
-        data: { likes: post.likes }
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
 
   /**
    * 📊 Estatísticas do blog

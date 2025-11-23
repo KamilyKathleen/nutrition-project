@@ -2,8 +2,7 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  cpf: string;
-  phone: string;
+  // 🔥 CPF e phone removidos - usuários Firebase básicos NÃO têm esses campos
   crn?: string; // 🏥 CRN obrigatório apenas para nutricionistas
   role: UserRole;
   avatar?: string;
@@ -11,10 +10,14 @@ export interface User {
   createdAt: Date;
   updatedAt: Date;
   lastLogin?: Date;
+  // 🔥 Firebase fields - OBRIGATÓRIOS para usuários criados via Firebase
+  firebaseUid: string; // Obrigatório
+  emailVerified: boolean; // Vem do Firebase
 }
 
 export enum UserRole {
   STUDENT = 'student',
+  PATIENT = 'patient', // 🔥 Novo role para Firebase
   NUTRITIONIST = 'nutritionist',
   ADMIN = 'admin'
 }

@@ -6,11 +6,11 @@
 
 import { Router } from 'express';
 import { body, query, param } from 'express-validator';
-import BlogController from '@/controllers/BlogController';
-import { authenticate, authorize } from '@/middlewares/auth';
-import { AppError } from '@/middlewares/errorHandler';
-import { UserRole } from '@/types';
-import { BlogCategory, BlogStatus } from '@/models/Blog';
+import BlogController from '../controllers/BlogController';
+import { authenticate, authorize } from '../middlewares/auth';
+import { AppError } from '../middlewares/errorHandler';
+import { UserRole } from '../types';
+import { BlogCategory, BlogStatus } from '../models/Blog';
 
 /**
  * 📋 Middleware de auditoria para blog
@@ -148,7 +148,7 @@ const paginationValidation = [
     .withMessage('Limite deve estar entre 1 e 50'),
   query('sortBy')
     .optional()
-    .isIn(['publishedAt', 'views', 'likes', 'title', 'createdAt', 'updatedAt'])
+    .isIn(['publishedAt', 'views', 'title', 'createdAt', 'updatedAt'])
     .withMessage('Campo de ordenação inválido'),
   query('sortOrder')
     .optional()
@@ -320,25 +320,7 @@ router.get('/:id/related',
   BlogController.getRelatedPosts
 );
 
-/**
- * 👍 Curtir post
- */
-router.post('/:id/like',
-  [param('id').isMongoId().withMessage('ID do post inválido')],
-  validateRequest,
-  auditBlogAccess('blog_like', (req) => req.params.id || ''),
-  BlogController.likePost
-);
 
-/**
- * 👎 Descurtir post
- */
-router.delete('/:id/like',
-  [param('id').isMongoId().withMessage('ID do post inválido')],
-  validateRequest,
-  auditBlogAccess('blog_unlike', (req) => req.params.id || ''),
-  BlogController.unlikePost
-);
 
 /**
  * 📊 Estatísticas do blog (apenas nutricionistas e admin)

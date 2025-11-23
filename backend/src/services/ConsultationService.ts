@@ -5,10 +5,10 @@
  */
 
 import mongoose from 'mongoose';
-import ConsultationModel, { IConsultation } from '@/models/Consultation';
-import { PatientModel } from '@/models/Patient';
-import { AppError } from '@/middlewares/errorHandler';
-import { Consultation } from '@/types';
+import ConsultationModel from '../models/Consultation';
+import { PatientModel } from '../models/Patient';
+import { AppError } from '../middlewares/errorHandler';
+import { Consultation } from '../types';
 
 export class ConsultationService {
   

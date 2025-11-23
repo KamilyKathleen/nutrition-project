@@ -1,6 +1,6 @@
-import { UserModel } from '@/models/User';
-import { User, CreateUserRequest, UserRole } from '@/types';
-import { AppError } from '@/middlewares/errorHandler';
+import { UserModel } from '../models/User';
+import { User, CreateUserRequest, UserRole } from '../types';
+import { AppError } from '../middlewares/errorHandler';
 import mongoose from 'mongoose';
 
 export class UserService {
@@ -74,8 +74,7 @@ export class UserService {
         id: user._id.toString(),
         name: user.name,
         email: user.email,
-        cpf: user.cpf,
-        phone: user.phone,
+        // 🔥 CPF e phone removidos - usuários Firebase não têm esses campos
         crn: user.crn, // 🏥 Incluir CRN
         role: user.role,
         avatar: user.avatar,
@@ -83,6 +82,8 @@ export class UserService {
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
         lastLogin: user.lastLogin,
+        firebaseUid: user.firebaseUid, // 🔥 Firebase UID obrigatório
+        emailVerified: user.emailVerified, // 🔥 Status de verificação do email
         password: user.password  // 🔐 Manter senha para comparação
       } as User & { password: string };
     } catch (error) {
@@ -214,5 +215,86 @@ export class UserService {
 
   async deactivate(id: string): Promise<User> {
     return this.update(id, { isActive: false });
+  }
+
+  async findByFirebaseUid(firebaseUid: string): Promise<(User & { password: string }) | null> {
+    try {
+      const user = await UserModel.findOne({ firebaseUid }).lean();
+      return user as (User & { password: string }) | null;
+    } catch (error) {
+      throw new AppError('Erro ao buscar usuário por Firebase UID', 500);
+    }
+  }
+
+  async createFirebaseUser(userData: {
+    name: string;
+    email: string;
+    role?: string;
+    firebaseUid: string;
+    emailVerified?: boolean;
+  }): Promise<User> {
+    try {
+      // 🔥 Verificar se email já existe
+      const existingUser = await UserModel.findOne({ 
+        email: userData.email.toLowerCase() 
+      });
+      
+      if (existingUser) {
+        throw new AppError('Email já cadastrado', 400);
+      }
+
+      // 🔥 Criar usuário Firebase básico SEM CPF, telefone, avatar
+      const user = new UserModel({
+        name: userData.name,
+        email: userData.email.toLowerCase(),
+        password: 'firebase_auth', // Placeholder obrigatório
+        role: userData.role || UserRole.PATIENT,
+        isActive: true,
+        firebaseUid: userData.firebaseUid,
+        emailVerified: userData.emailVerified || false
+        // CPF, phone e avatar são undefined (não enviamos)
+      });
+
+      const savedUser = await user.save();
+      return savedUser.toJSON() as User;
+    } catch (error: any) {
+      if (error instanceof AppError) {
+        throw error;
+      }
+      if (error.code === 11000) {
+        throw new AppError('Email ou Firebase UID já cadastrado', 400);
+      }
+      throw new AppError('Erro ao criar usuário Firebase', 500);
+    }
+  }
+
+  async linkFirebaseUid(userId: string, firebaseUid: string): Promise<User> {
+    try {
+      const user = await UserModel.findByIdAndUpdate(
+        userId,
+        { 
+          firebaseUid,
+          emailVerified: true // Assume que Firebase já verificou
+        },
+        { new: true, runValidators: false } // Não validar CPF/phone para usuários existentes
+      );
+
+      if (!user) {
+        throw new AppError('Usuário não encontrado', 404);
+      }
+
+      return user.toJSON() as User;
+    } catch (error: any) {
+      if (error.code === 11000) {
+        throw new AppError('Firebase UID já vinculado a outra conta', 400);
+      }
+      throw new AppError('Erro ao vincular Firebase UID', 500);
+    }
+  }
+
+  // Método para comparar senha (para compatibilidade)
+  async comparePassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
+    const bcrypt = require('bcryptjs');
+    return await bcrypt.compare(plainPassword, hashedPassword);
   }
 }

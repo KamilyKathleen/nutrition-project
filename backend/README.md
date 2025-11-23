@@ -195,8 +195,6 @@ vercel --prod
 
 ### Docker
 ```dockerfile
-# Disponível em breve
-```
 
 ## 📝 Contribuição
 
@@ -206,7 +204,35 @@ vercel --prod
 4. Push: `git push origin feature/nova-feature`
 5. Pull Request
 
-## 📄 Licença
+## 📁 Estrutura do Projeto
+
+```
+backend/
+├── src/                    # Código fonte principal
+│   ├── controllers/        # Controladores da API
+│   ├── services/          # Lógica de negócio
+│   ├── models/            # Modelos do banco de dados
+│   ├── routes/            # Definição das rotas
+│   ├── middlewares/       # Middlewares customizados
+│   ├── lib/               # Bibliotecas e configurações
+│   └── utils/             # Utilitários
+├── docs/                  # Documentação completa
+├── tests/                 # Testes automatizados
+├── deployment/            # Arquivos de deploy
+└── scripts/               # Scripts de desenvolvimento
+```
+
+## 📚 Documentação Completa
+
+Para documentação detalhada, consulte:
+- **[📁 Documentação Completa](./docs/README.md)** - Índice geral da documentação
+- **[🏗️ Arquitetura](./docs/ARCHITECTURE.md)** - Visão geral da arquitetura
+- **[🚀 Deploy](./docs/deployment/)** - Guias de deployment
+- **[🔒 Segurança](./docs/security/)** - Implementações de segurança
+- **[⚡ Funcionalidades](./docs/features/)** - Detalhes das funcionalidades
+- **[🛠️ Desenvolvimento](./docs/development/)** - Guias de desenvolvimento
+
+## �📄 Licença
 
 MIT License - veja [LICENSE](LICENSE) para detalhes.
 

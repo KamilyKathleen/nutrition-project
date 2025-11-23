@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
-import { UserService } from '@/services/UserService';
-import { AppError, asyncHandler } from '@/middlewares/errorHandler';
-import { ApiResponse, PaginatedResponse, AuthenticatedRequest, UserRole, User } from '@/types';
-import { config } from '@/config/environment';
+import { UserService } from '../services/UserService';
+import { AppError, asyncHandler } from '../middlewares/errorHandler';
+import { ApiResponse, PaginatedResponse, AuthenticatedRequest, UserRole } from '../types';
+import { config } from '../config/environment';
 
 export class UserController {
   private readonly userService: UserService;

@@ -1,7 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { UserModel } from '@/models/User';
-import { config } from '@/config/environment';
+import { config } from '../config/environment';
 
 interface PasswordResetToken {
   userId: string;

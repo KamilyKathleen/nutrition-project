@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { UserController } from '@/controllers/UserController';
-import { authenticate, authorize } from '@/middlewares/auth';
-import { validate, validateParams, validateQuery } from '@/middlewares/validation';
-import { UserRole } from '@/types';
+import { UserController } from '../controllers/UserController';
+import { authenticate, authorize } from '../middlewares/auth';
+import { validate, validateParams, validateQuery } from '../middlewares/validation';
+import { UserRole } from '../types';
 import Joi from 'joi';
 
 const router = Router();

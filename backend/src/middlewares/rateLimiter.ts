@@ -1,6 +1,6 @@
 import { RateLimiterMemory } from 'rate-limiter-flexible';
 import { Request, Response, NextFunction } from 'express';
-import { config } from '@/config/environment';
+import { config } from '../config/environment';
 import { AppError } from './errorHandler';
 
 const rateLimiter = new RateLimiterMemory({
@@ -16,8 +16,8 @@ export const rateLimiterMiddleware = async (
   try {
     await rateLimiter.consume(req.ip || 'unknown');
     next();
-  } catch (rejRes: any) {
-    const secs = Math.round(rejRes.msBeforeNext / 1000) || 1;
+  } catch (error_: any) {
+    const secs = Math.round(error_.msBeforeNext / 1000) || 1;
     res.set('Retry-After', String(secs));
     next(new AppError('Muitas tentativas. Tente novamente em alguns minutos.', 429));
   }
@@ -37,8 +37,8 @@ export const loginRateLimiterMiddleware = async (
   try {
     await loginRateLimiter.consume(req.ip || 'unknown');
     next();
-  } catch (rejRes: any) {
-    const secs = Math.round(rejRes.msBeforeNext / 1000) || 1;
+  } catch (error_: any) {
+    const secs = Math.round(error_.msBeforeNext / 1000) || 1;
     res.set('Retry-After', String(secs));
     next(new AppError('Muitas tentativas de login. Tente novamente em 15 minutos.', 429));
   }

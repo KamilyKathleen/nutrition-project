@@ -139,7 +139,7 @@ router.get('/metrics',
  * 📊 Exportar relatório completo
  */
 router.get('/complete',
-  authorize(UserRole.ADMIN, UserRole.NUTRITIONIST),
+  authorize([UserRole.ADMIN, UserRole.NUTRITIONIST]),
   exportValidation,
   validateRequest,
   auditSensitiveAccess('export_complete_report', 'USER', (req: AuthenticatedRequest) => req.user?.userId || ''),

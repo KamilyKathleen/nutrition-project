@@ -5,9 +5,9 @@
  */
 
 import { Response, NextFunction } from 'express';
-import ConsultationService from '@/services/ConsultationService';
-import { AuthenticatedRequest } from '@/middlewares/auth';
-import { AppError } from '@/middlewares/errorHandler';
+import ConsultationService from '../services/ConsultationService';
+import { AuthenticatedRequest } from '../middlewares/auth';
+import { AppError } from '../middlewares/errorHandler';
 
 class ConsultationController {
 

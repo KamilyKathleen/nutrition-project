@@ -13,6 +13,18 @@ import { AuthenticatedRequest } from './auth';
 // 🎯 INTERFACES
 // ================================
 
+interface MetricRequest extends Request {
+  user?: {
+    uid: string;
+    userId: string;
+    email: string;
+    name?: string;
+    role?: string;
+  };
+  path: string;
+  method: string;
+}
+
 interface MetricRequest extends AuthenticatedRequest {
   timing?: {
     startTime: number;

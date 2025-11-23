@@ -5,7 +5,7 @@
  */
 
 import mongoose, { Schema, Document } from 'mongoose';
-import { encrypt, decrypt } from '@/utils/encryption';
+import { encrypt, decrypt } from '../utils/encryption';
 
 /**
  * 🎯 INTERFACE DO PLANO DIETÉTICO

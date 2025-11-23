@@ -9,8 +9,7 @@ import { NotificationService } from '../services/NotificationService';
 import { 
   NotificationModel, 
   NotificationType, 
-  NotificationStatus,
-  NotificationChannel 
+  NotificationStatus
 } from '../models/Notification';
 import { validationResult } from 'express-validator';
 
@@ -18,7 +17,7 @@ import { validationResult } from 'express-validator';
  * 📧 CONTROLLER DE NOTIFICAÇÕES
  */
 export class NotificationController {
-  private notificationService: NotificationService;
+  private readonly notificationService: NotificationService;
 
   constructor() {
     this.notificationService = new NotificationService();

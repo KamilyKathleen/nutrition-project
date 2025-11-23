@@ -4,10 +4,8 @@
  * Lógica de negócio para gestão de conteúdo educativo
  */
 
-import Blog, { IBlog, BlogCategory, BlogStatus } from '@/models/Blog';
-import { IUser } from '@/models/User';
-import { AppError } from '@/middlewares/errorHandler';
-import { logAudit } from '@/utils/auditUtils';
+import Blog, { IBlog, BlogCategory, BlogStatus } from '../models/Blog';
+import { AppError } from '../middlewares/errorHandler';
 import mongoose from 'mongoose';
 
 /**
@@ -111,14 +109,14 @@ class BlogService {
 
       await post.save();
 
-      // Log de auditoria
-      await logAudit(
-        'blog_create',
-        'Blog',
-        post.id,
-        authorId,
-        { title: post.title, category: post.category, status: post.status }
-      );
+      // Log de auditoria (temporariamente comentado)
+      // // await logAudit(
+      //   'blog_create',
+      //   'Blog',
+      //   post.id,
+      //   authorId,
+      //   { title: post.title, category: post.category, status: post.status }
+      // );
 
       return await Blog.findById(post._id)
         .populate('author', 'name email')
@@ -297,28 +295,22 @@ class BlogService {
       }
 
       // Atualizar auditoria
-      const auditUpdate = {
-        'auditInfo.updatedBy': userId,
-        'auditInfo.updatedAt': new Date(),
-        'auditInfo.version': (post.auditInfo as any).version + 1
-      };
-
       const updatedPost = await Blog.findByIdAndUpdate(
         postId,
-        { ...updateData, ...auditUpdate },
+        updateData,
         { new: true, runValidators: true }
       )
       .populate('author', 'name email profileImage')
       .populate('relatedPosts', 'title slug excerpt featuredImage category');
 
       // Log de auditoria
-      await logAudit(
-        'blog_update',
-        'Blog',
-        postId,
-        userId,
-        { updatedFields: Object.keys(updateData) }
-      );
+      // await logAudit(
+      //   'blog_update',
+      //   'Blog',
+      //   postId,
+      //   userId,
+      //   { updatedFields: Object.keys(updateData) }
+      // );
 
       return updatedPost!;
 
@@ -350,15 +342,6 @@ class BlogService {
       }
 
       await Blog.findByIdAndDelete(postId);
-
-      // Log de auditoria
-      await logAudit(
-        'blog_delete',
-        'Blog',
-        postId,
-        userId,
-        { title: post.title, category: post.category }
-      );
 
     } catch (error) {
       throw error;
@@ -438,75 +421,7 @@ class BlogService {
     }
   }
 
-  /**
-   * 👍 Curtir post
-   */
-  async likePost(postId: string, userId: string): Promise<IBlog> {
-    try {
-      if (!mongoose.Types.ObjectId.isValid(postId)) {
-        throw new AppError('ID do post inválido', 400);
-      }
 
-      const post = await Blog.findById(postId);
-      if (!post) {
-        throw new AppError('Post não encontrado', 404);
-      }
-
-      if (post.status !== BlogStatus.PUBLISHED) {
-        throw new AppError('Post não está publicado', 400);
-      }
-
-      await post.incrementLikes();
-
-      // Log de auditoria
-      await logAudit(
-        'blog_like',
-        'Blog',
-        postId,
-        userId,
-        { totalLikes: post.likes + 1 }
-      );
-
-      return await Blog.findById(postId)
-        .populate('author', 'name email profileImage') as IBlog;
-
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  /**
-   * 👎 Descurtir post
-   */
-  async unlikePost(postId: string, userId: string): Promise<IBlog> {
-    try {
-      if (!mongoose.Types.ObjectId.isValid(postId)) {
-        throw new AppError('ID do post inválido', 400);
-      }
-
-      const post = await Blog.findById(postId);
-      if (!post) {
-        throw new AppError('Post não encontrado', 404);
-      }
-
-      await post.decrementLikes();
-
-      // Log de auditoria
-      await logAudit(
-        'blog_unlike',
-        'Blog',
-        postId,
-        userId,
-        { totalLikes: Math.max(0, post.likes - 1) }
-      );
-
-      return await Blog.findById(postId)
-        .populate('author', 'name email profileImage') as IBlog;
-
-    } catch (error) {
-      throw error;
-    }
-  }
 
   /**
    * 📊 Estatísticas do blog

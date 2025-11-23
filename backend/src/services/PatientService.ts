@@ -1,6 +1,6 @@
-import { PatientModel } from '@/models/Patient';
-import { Patient, CreatePatientRequest, UpdatePatientRequest } from '@/types';
-import { AppError } from '@/middlewares/errorHandler';
+import { PatientModel } from '../models/Patient';
+import { Patient, CreatePatientRequest, UpdatePatientRequest } from '../types';
+import { AppError } from '../middlewares/errorHandler';
 import mongoose from 'mongoose';
 
 export class PatientService {

@@ -6,12 +6,12 @@
 
 import { Router } from 'express';
 import { body, param, query } from 'express-validator';
-import { authenticate, authorize } from '@/middlewares/auth';
-import { validateRequest } from '@/middlewares/expressValidation';
-import { auditSensitiveAccess } from '@/middlewares/auditMiddleware';
-import { NotificationController } from '@/controllers/NotificationController';
-import { UserRole } from '@/types';
-import { NotificationType, NotificationChannel } from '@/models/Notification';
+import { authenticate, authorize } from '../middlewares/auth';
+import { validateRequest } from '../middlewares/expressValidation';
+import { auditSensitiveAccess } from '../middlewares/auditMiddleware';
+import { NotificationController } from '../controllers/NotificationController';
+import { UserRole } from '../types';
+import { NotificationType, NotificationChannel } from '../models/Notification';
 
 const router = Router();
 const notificationController = new NotificationController();
@@ -215,7 +215,7 @@ router.post('/welcome',
  * ⏰ Enviar lembrete de consulta
  */
 router.post('/consultation-reminder',
-  authorize(UserRole.NUTRITIONIST, UserRole.ADMIN),
+  authorize([UserRole.NUTRITIONIST, UserRole.ADMIN]),
   [
     body('userId')
       .isMongoId()

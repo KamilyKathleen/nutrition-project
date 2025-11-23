@@ -1,7 +1,7 @@
 import Image from "next/image";
 import LoremIpsum from "@/app/components/loremIpsum";
 import Placeholder from "@/app/img/placeholder.webp";
-import Banner from "@/app/img/banner.jpg";
+import Banner from "@/app/img/banner.jpeg";
 import Link from "next/link";
 import Card from "@/app/components/card";
 
