@@ -56,7 +56,7 @@ export default function FAQ() {
                 title="1. Como registro minhas refeições no Nutriplan?"
                 indicator={({ isOpen }) => (isOpen ? <FaAngleUp /> : <FaAngleDown />)}
               >
-                Basta acessar a aba 'Refeições' no seu Dashboard, selecionar o tipo de refeição (café da manhã, almoço, jantar ou lanche) e adicionar os alimentos consumidos. Você também pode incluir fotos, quantidades aproximadas e observações para que o nutricionista compreenda melhor sua rotina.
+                Basta acessar a aba &apos;Refeições&apos; no seu Dashboard, selecionar o tipo de refeição (café da manhã, almoço, jantar ou lanche) e adicionar os alimentos consumidos. Você também pode incluir fotos, quantidades aproximadas e observações para que o nutricionista compreenda melhor sua rotina.
               </AccordionItem>
               <AccordionItem
                 key="2"
