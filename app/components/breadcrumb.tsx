@@ -11,7 +11,7 @@ interface BreadcrumbProps {
 export default function Breadcrumb({image, title, page} : BreadcrumbProps) {
     return (
         <>
-            <div className="relative w-full h-[75vh] mb-4">
+            <div className="relative w-full h-[75vh]">
                 <Image src={image} alt="Banner" className="object-cover" fill priority />
                 <div className="absolute inset-0 bg-coalGray/60 z-10">
                     <div className="absolute inset-0 flex flex-col justify-center">

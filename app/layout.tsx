@@ -30,7 +30,7 @@ export default function RootLayout({
 }>) {
 
   const pathName = usePathname();
-  const noHeaderFooterRoutes = ["/pages/login"];
+  const noHeaderFooterRoutes = ["/pages/login", "/pages/register"];
   const showHeaderFooter = !noHeaderFooterRoutes.includes(pathName);
 
   return (

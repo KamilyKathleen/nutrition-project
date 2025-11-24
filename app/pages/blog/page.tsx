@@ -13,7 +13,7 @@ export default function Blog() {
         <div>
             <Breadcrumb
                 image={Banner}
-                title="Artigos"
+                title="Artigos e Receitas"
                 page="Blog"
             />
 
@@ -24,7 +24,7 @@ export default function Blog() {
                         image={Iogurt}
                         title=""
                         subtitle="Receita de iogurte com chia e frutas"
-                        description="Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Maecenas porttitor congue massa."
+                        description="Uma opção leve e nutritiva para começar o dia com energia e equilíbrio."
                         page="/pages/test"
                         button="Ler mais"
                     />
@@ -32,7 +32,7 @@ export default function Blog() {
                         image={Bolo}
                         title=""
                         subtitle="Receita de bolo de aveia"
-                        description="Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Maecenas porttitor congue massa."
+                        description="Rico em fibras e muito saboroso, ideal para lanches saudáveis ao longo da semana."
                         page="/pages/test"
                         button="Ler mais"
                     />
@@ -40,7 +40,7 @@ export default function Blog() {
                         image={Panqueca}
                         title=""
                         subtitle="Receita de panqueca de banana"
-                        description="Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Maecenas porttitor congue massa."
+                        description="Prática, rápida e sem açúcar refinado — perfeita para uma rotina mais saudável."
                         page="/pages/test"
                         button="Ler mais"
                     />

@@ -6,7 +6,7 @@ import { FaLightbulb, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useState } from 'react';
 import Link from 'next/link';
 
-export default function LoginPage() {
+export default function RegisterPage() {
 
     const [showPassword, setShowPassword] = useState(false);
 
@@ -19,7 +19,7 @@ export default function LoginPage() {
                         alt='Logo'
                         className='w-48 mx-auto my-8'
                     />
-                    <h2 className="text-2xl text-petroleumGreen font-bold text-center my-4 uppercase">Login</h2>
+                    <h2 className="text-2xl text-petroleumGreen font-bold text-center my-4 uppercase">Cadastro</h2>
 
                     {/* Email Field */}
                     <div className="flex flex-col my-4">
@@ -53,13 +53,6 @@ export default function LoginPage() {
                                 <FaEyeSlash className="opacity-60" />
                             )}
                         </button>
-
-                        <Link
-                            href=""
-                            className='text-gray-400 text-sm text-right hover:underline'
-                        >
-                            Esqueci a senha
-                        </Link>
                     </div>
 
                     <div className='text-center'>
@@ -67,16 +60,16 @@ export default function LoginPage() {
                             href='/pages/dashboard'
                             className="mt-6 px-12 py-3 font-semibold bg-mintGreen text-coalGray rounded hover:bg-petroleumGreen hover:text-white transition inline-block text-center"
                         >
-                            Entrar
+                            Cadastrar
                         </Link>
                     </div>
 
                     <div className='text-center mt-6'>
                         <Link
-                            href='/pages/register'
+                            href='/pages/login'
                             className="text-gray-400 text-sm hover:underline"
                         >
-                            Ainda não possui cadastro? Registre-se!
+                            Já possui cadastro? Faça Login!
                         </Link>
                     </div>
 

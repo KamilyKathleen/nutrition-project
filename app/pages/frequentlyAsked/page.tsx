@@ -7,6 +7,7 @@ import Placeholder from "@/app/img/placeholder.webp";
 import Banner from "@/app/img/banner.jpeg";
 import { Accordion, AccordionItem } from "@heroui/accordion";
 import { FaAngleDown, FaAngleUp } from "react-icons/fa";
+import Mesa from "@/app/img/mesa.webp"
 
 export default function FAQ() {
 
@@ -21,21 +22,21 @@ export default function FAQ() {
     <>
       <Breadcrumb
         image={Banner}
-        title="Testando o banner no TS"
+        title="Dúvidas Frequentes"
         page="Perguntas Frequentes"
       />
 
       <div className="flex flex-col md:flex-row items-center">
         <div className="md:w-1/2 p-4">
           <div className='w-[90%] md:w-[80%] mx-auto space-y-8 my-6'>
-            <h2 className="uppercase text-3xl text-center text-petroleumGreen font-bold">Título sobre o que é feito nessa página</h2>
-            <p className="text-lg md:text-justify leading-relaxed">Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.</p>
-            <p className="text-lg md:text-justify leading-relaxed">Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.</p>
+            <h2 className="uppercase text-3xl text-center text-petroleumGreen font-bold">Entenda como o Nutriplan funciona</h2>
+            <p className="text-lg md:text-justify leading-relaxed">Nesta página você encontra respostas para as principais dúvidas sobre o funcionamento do Nutriplan. Explicamos como registrar refeições, acompanhar sua evolução, acessar o plano alimentar criado pelo seu nutricionista e utilizar todos os recursos da plataforma.</p>
+            <p className="text-lg md:text-justify leading-relaxed">Nosso objetivo é oferecer uma experiência simples e prática. Aqui você descobre como tirar o máximo proveito das ferramentas disponíveis, garantindo um acompanhamento nutricional completo e eficiente no seu dia a dia.</p>
           </div>
         </div>
         <div className="md:w-1/2">
           <div className='w-full'>
-            <Image src={Placeholder} alt="Placeholder" className="bg-cover" />
+            <Image src={Mesa} alt="Placeholder" className="bg-cover" />
           </div>
         </div>
       </div>
@@ -52,34 +53,34 @@ export default function FAQ() {
               <AccordionItem
                 key="1"
                 aria-label="Accordion 1"
-                title="1. Lorem Ipsum?"
+                title="1. Como registro minhas refeições no Nutriplan?"
                 indicator={({ isOpen }) => (isOpen ? <FaAngleUp /> : <FaAngleDown />)}
               >
-                Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.
+                Basta acessar a aba &apos;Refeições&apos; no seu Dashboard, selecionar o tipo de refeição (café da manhã, almoço, jantar ou lanche) e adicionar os alimentos consumidos. Você também pode incluir fotos, quantidades aproximadas e observações para que o nutricionista compreenda melhor sua rotina.
               </AccordionItem>
               <AccordionItem
                 key="2"
                 aria-label="Accordion 2"
-                title="2. Lorem Ipsum?"
+                title="2. Meu nutricionista consegue visualizar tudo o que eu registro?"
                 indicator={({ isOpen }) => (isOpen ? <FaAngleUp /> : <FaAngleDown />)}
               >
-                Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.
+                Sim! Todas as refeições, atividades físicas e atualizações de progresso são enviadas automaticamente para o painel do seu nutricionista. Assim, ele pode acompanhar sua evolução em tempo real e ajustar seu plano alimentar sempre que necessário.
               </AccordionItem>
               <AccordionItem
                 key="3"
                 aria-label="Accordion 3"
-                title="3. Lorem Ipsum?"
+                title="3. Posso acompanhar meu progresso dentro da plataforma?"
                 indicator={({ isOpen }) => (isOpen ? <FaAngleUp /> : <FaAngleDown />)}
               >
-                Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.
+                Claro! O Nutriplan oferece gráficos, metas e relatórios completos sobre seu peso, medidas, evolução das refeições e treino. Você também pode exportar esses dados em PDF ou Excel para consultar quando quiser.
               </AccordionItem>
               <AccordionItem
                 key="4"
                 aria-label="Accordion 4"
-                title="4. Lorem Ipsum?"
+                title="4. Preciso de um nutricionista para usar o Nutriplan?"
                 indicator={({ isOpen }) => (isOpen ? <FaAngleUp /> : <FaAngleDown />)}
               >
-                Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.
+                Você pode utilizar o Nutriplan de forma independente, porém a experiência é muito mais completa quando conectada a um nutricionista. Assim, você recebe orientações personalizadas e um plano alimentar adequado ao seu objetivo.
               </AccordionItem>
             </Accordion>
           </div>
