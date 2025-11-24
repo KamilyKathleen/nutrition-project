@@ -24,7 +24,7 @@ export default function Dashboard() {
         <div>
             <Breadcrumb
                 image={Banner}
-                title={`Bem-vindo(a), ${currentUser.name}!`}
+                title={`Bem-vindo(a), ${currentUser?.name ?? ""}!`}
                 page="Dashboard"
             />
 
