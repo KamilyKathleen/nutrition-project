@@ -56,7 +56,7 @@ export class ConsultationService {
       });
 
       const savedConsultation = await consultation.save();
-      await savedConsultation.populate('patientId', 'name email phone cpf');
+      await savedConsultation.populate('patientId', 'name email');
 
       return this.mapToInterface(savedConsultation);
     } catch (error: any) {
@@ -79,7 +79,7 @@ export class ConsultationService {
 
       const consultation = await ConsultationModel
         .findOne(query)
-        .populate('patientId', 'name email phone cpf')
+        .populate('patientId', 'name email')
         .lean();
 
       if (!consultation) return null;

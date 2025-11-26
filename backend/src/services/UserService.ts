@@ -2,49 +2,56 @@ import { UserModel } from '../models/User';
 import { User, CreateUserRequest, UserRole } from '../types';
 import { AppError } from '../middlewares/errorHandler';
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 export class UserService {
   async create(userData: CreateUserRequest & { password: string }): Promise<User> {
     try {
       // 🔍 Verificar se email já existe
+      const emailToCheck = userData.email.toLowerCase();
+      console.log('Verificando email:', emailToCheck);
+      
       const existingUser = await UserModel.findOne({ 
-        email: userData.email.toLowerCase() 
+        email: emailToCheck 
       });
+      console.log('Usuário encontrado:', existingUser ? 'SIM' : 'NÃO');
       
       if (existingUser) {
         throw new AppError('Email já cadastrado', 400);
       }
 
-      // 🔍 Verificar se CPF já existe
-      const existingCpf = await UserModel.findOne({ 
-        cpf: userData.cpf 
-      });
-      
-      if (existingCpf) {
-        throw new AppError('CPF já cadastrado', 400);
-      }
+      // Hash da senha antes de salvar
+      const saltRounds = 12;
+      console.log(`🔍 Criação: Senha original: ${userData.password}`);
+      const hashedPassword = await bcrypt.hash(userData.password, saltRounds);
+      console.log(`🔍 Criação: Senha hashada: ${hashedPassword.substring(0, 15)}...`);
 
-      const user = new UserModel({
+      const userDoc: any = {
         name: userData.name,
         email: userData.email.toLowerCase(),
-        password: userData.password,
-        cpf: userData.cpf,
-        phone: userData.phone,
+        password: hashedPassword,
         crn: userData.crn, // 🏥 CRN para nutricionistas
         role: userData.role,
-        isActive: true
-      });
+        isActive: true,
+        emailVerified: false
+      };
+
+      // firebaseUid será undefined por padrão (não incluído em userData)
+
+      const user = new UserModel(userDoc);
 
       const savedUser = await user.save();
       return savedUser.toJSON() as User;
     } catch (error: any) {
+      console.error('Erro detalhado na criação do usuário:', error);
       if (error instanceof AppError) {
         throw error;
       }
       if (error.code === 11000) {
-        throw new AppError('Email ou CPF já cadastrado', 400);
+        throw new AppError('Email já cadastrado', 400);
       }
-      throw new AppError('Erro ao criar usuário', 500);
+      // Lançar erro mais específico
+      throw new AppError(error.message || 'Erro ao criar usuário', 500);
     }
   }
 

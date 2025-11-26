@@ -14,7 +14,6 @@ const createPatientSchema = Joi.object({
   email: Joi.string().email().optional(),
   birthDate: Joi.date().required(),
   gender: Joi.string().valid('male', 'female', 'other').required(),
-  phone: Joi.string().pattern(/^\(\d{2}\)\s\d{4,5}-\d{4}$/).optional(),
   address: Joi.object({
     street: Joi.string().required(),
     number: Joi.string().required(),
@@ -35,7 +34,6 @@ const updatePatientSchema = Joi.object({
   email: Joi.string().email().optional(),
   birthDate: Joi.date().optional(),
   gender: Joi.string().valid('male', 'female', 'other').optional(),
-  phone: Joi.string().pattern(/^\(\d{2}\)\s\d{4,5}-\d{4}$/).optional(),
   address: Joi.object({
     street: Joi.string().optional(),
     number: Joi.string().optional(),

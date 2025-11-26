@@ -26,8 +26,6 @@ const userSchema = new Schema<IUser>({
       message: 'Email inválido'
     }
   },
-  // 🔥 CPF e phone removidos para usuários Firebase básicos
-  // Usuários Firebase são identificados apenas por firebaseUid
   crn: {
     type: String,
     required: function(this: IUser): boolean {
@@ -43,8 +41,8 @@ const userSchema = new Schema<IUser>({
   password: {
     type: String,
     required: [true, 'Senha é obrigatória'],
-    minlength: [8, 'Senha deve ter pelo menos 8 caracteres'],
-    maxlength: [12, 'Senha deve ter no máximo 12 caracteres']
+    minlength: [8, 'Senha deve ter pelo menos 8 caracteres']
+    // Removido maxlength porque a senha será hasheada
   },
   role: {
     type: String,
@@ -63,12 +61,14 @@ const userSchema = new Schema<IUser>({
     type: Date,
     default: null
   },
-  // 🔥 Firebase fields - OBRIGATÓRIOS para usuários Firebase
+  // 🔥 Firebase fields - OPCIONAL para usuários sem Firebase  
   firebaseUid: {
     type: String,
-    required: [true, 'Firebase UID é obrigatório'],
+    required: false,
     unique: true,
-    index: true
+    sparse: true // Permite valores null/undefined sem conflito de unique
+    // Sem index: true pois unique já cria índice
+    // Sem default para não definir valor
   },
   emailVerified: {
     type: Boolean,
@@ -79,8 +79,7 @@ const userSchema = new Schema<IUser>({
   versionKey: false
 });
 
-// Index for better query performance
-userSchema.index({ email: 1 });
+// Index for better query performance (email já tem índice unique)
 userSchema.index({ role: 1 });
 userSchema.index({ isActive: 1 });
 

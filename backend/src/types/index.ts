@@ -2,7 +2,6 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  // 🔥 CPF e phone removidos - usuários Firebase básicos NÃO têm esses campos
   crn?: string; // 🏥 CRN obrigatório apenas para nutricionistas
   role: UserRole;
   avatar?: string;
@@ -10,8 +9,8 @@ export interface User {
   createdAt: Date;
   updatedAt: Date;
   lastLogin?: Date;
-  // 🔥 Firebase fields - OBRIGATÓRIOS para usuários criados via Firebase
-  firebaseUid: string; // Obrigatório
+  // 🔥 Firebase fields - OPCIONAIS para compatibilidade
+  firebaseUid?: string; // Opcional para usuários não-Firebase
   emailVerified: boolean; // Vem do Firebase
 }
 
@@ -26,7 +25,6 @@ export interface Patient {
   id: string;
   name: string;
   email?: string;
-  phone?: string;
   birthDate: Date;
   gender: Gender;
   address?: Address;
@@ -279,8 +277,6 @@ export interface CreateUserRequest {
   name: string;
   email: string;
   password: string;
-  cpf: string;
-  phone: string;
   crn?: string; // 🏥 CRN para nutricionistas
   role: UserRole;
 }
@@ -293,8 +289,6 @@ export interface LoginRequest {
 export interface CreatePatientRequest {
   name: string;
   email?: string;
-  cpf?: string; // 📝 CPF opcional
-  phone?: string;
   birthDate: string;
   gender: Gender;
   occupation?: string;

@@ -191,7 +191,7 @@ const blogSchema = new Schema<IBlog>({
 // 🎯 ÍNDICES PARA PERFORMANCE
 // ================================
 
-blogSchema.index({ slug: 1 }, { unique: true });
+// blogSchema.index({ slug: 1 }, { unique: true }); // Já tem unique: true no schema
 blogSchema.index({ status: 1, publishedAt: -1 });
 blogSchema.index({ category: 1, status: 1 });
 blogSchema.index({ author: 1, status: 1 });

@@ -5,7 +5,7 @@ const ALGORITHM = 'aes-256-cbc';
 
 /**
  * 🔐 CRIPTOGRAFIA DE DADOS SENSÍVEIS
- * Usado para proteger CPF, dados médicos, etc.
+ * Usado para proteger dados médicos e informações sensíveis.
  */
 export const encrypt = (text: string): string => {
   if (!text) return text;
@@ -86,7 +86,7 @@ export const anonymizePatient = (patient: any) => ({
   medicationsCount: patient.medications?.length || 0,
   hasEmergencyContact: !!patient.emergencyContact,
   // Dados removidos para anonimização
-  // name, cpf, phone, address completo, etc.
+  // name, address completo, dados médicos, etc.
 });
 
 /**

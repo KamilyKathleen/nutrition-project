@@ -11,8 +11,6 @@ const registerSchema = Joi.object({
   name: Joi.string().min(2).max(100).required(),
   email: Joi.string().email().required(),
   password: Joi.string().min(8).max(128).required(),
-  cpf: Joi.string().length(11).pattern(/^\d+$/).required(),
-  phone: Joi.string().min(10).max(15).required(),
   crn: Joi.when('role', {
     is: 'nutritionist',
     then: Joi.string().pattern(/^CRN-\d\/\d{4,5}$/).required().messages({
@@ -21,7 +19,7 @@ const registerSchema = Joi.object({
     }),
     otherwise: Joi.optional()
   }),
-  role: Joi.string().valid('student', 'nutritionist', 'admin').required()
+  role: Joi.string().valid('student', 'patient', 'nutritionist', 'admin').required()
 });
 
 const loginSchema = Joi.object({

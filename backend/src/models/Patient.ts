@@ -59,10 +59,6 @@ const patientSchema = new Schema<IPatient>({
       message: 'Email inválido'
     }
   },
-  phone: {
-    type: String,
-    trim: true
-  },
   birthDate: {
     type: Date,
     required: [true, 'Data de nascimento é obrigatória']

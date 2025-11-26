@@ -25,14 +25,8 @@ export class AuthController {
       throw new AppError('Email já cadastrado', 400);
     }
 
-    // Hash da senha
-    const hashedPassword = await bcrypt.hash(userData.password, 12);
-
-    // Criar usuário
-    const user = await this.userService.create({
-      ...userData,
-      password: hashedPassword
-    });
+    // Criar usuário (o UserService já faz o hash da senha)
+    const user = await this.userService.create(userData);
 
     // Gerar token
     const token = this.generateToken({
@@ -64,11 +58,17 @@ export class AuthController {
     // Buscar usuário
     const user = await this.userService.findByEmail(email);
     if (!user) {
+      console.log(`🔍 Login: Usuário não encontrado para email: ${email}`);
       throw new AppError('Credenciais inválidas', 401);
     }
 
+    console.log(`🔍 Login: Usuário encontrado: ${user.name} (${user.email})`);
+    console.log(`🔍 Login: Senha hash: ${user.password ? user.password.substring(0, 10) + '...' : 'undefined'}`);
+
     // Verificar senha
     const isPasswordValid = await this.authService.comparePassword(password, user.password);
+    console.log(`🔍 Login: Senha válida: ${isPasswordValid}`);
+    
     if (!isPasswordValid) {
       throw new AppError('Credenciais inválidas', 401);
     }

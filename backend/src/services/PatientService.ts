@@ -8,7 +8,6 @@ export class PatientService {
    * 🎯 CRIAR PACIENTE
    * Por que este método?
    * - Associa paciente ao usuário logado (student/nutritionist)
-   * - Valida dados únicos (CPF) apenas se informado
    * - Converte data de nascimento para Date
    */
     async create(createData: CreatePatientRequest, nutritionistId: string): Promise<Patient> {
@@ -32,7 +31,7 @@ export class PatientService {
         throw error;
       }
       if (error.code === 11000) {
-        throw new AppError('Paciente com este CPF já existe', 400);
+        throw new AppError('Erro de duplicação de dados', 400);
       }
       throw new AppError('Erro ao criar paciente', 500);
     }
@@ -135,17 +134,7 @@ export class PatientService {
         throw new AppError('ID de paciente inválido', 400);
       }
 
-      // 🔍 Verificar se CPF já existe em outro paciente (apenas se foi informado)
-      if (updateData.cpf) {
-        const existingPatient = await PatientModel.findOne({ 
-          cpf: updateData.cpf,
-          _id: { $ne: id } // Excluir o próprio paciente
-        });
-        
-        if (existingPatient) {
-          throw new AppError('Já existe outro paciente com este CPF', 400);
-        }
-      }
+
 
       const updateFields: any = { ...updateData };
       
@@ -175,7 +164,7 @@ export class PatientService {
         throw error;
       }
       if (error.code === 11000) {
-        throw new AppError('Já existe outro paciente com este CPF', 400);
+        throw new AppError('Erro de duplicação de dados', 400);
       }
       throw new AppError('Erro ao atualizar paciente', 500);
     }
