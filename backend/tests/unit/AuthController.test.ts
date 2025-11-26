@@ -103,7 +103,7 @@ describe('AuthController', () => {
       mockUserService.findByEmail = jest.fn().mockResolvedValue(null);
 
       // Act & Assert
-      await expect(authController.login(mockReq, mockRes))
+      await expect(authController.login(mockReq, mockRes, mockNext))
         .rejects.toThrow(new AppError('Credenciais inválidas', 401));
 
       expect(mockUserService.findByEmail).toHaveBeenCalledWith(loginData.email);
@@ -123,7 +123,7 @@ describe('AuthController', () => {
       mockAuthService.comparePassword = jest.fn().mockResolvedValue(false);
 
       // Act & Assert
-      await expect(authController.login(mockReq, mockRes))
+      await expect(authController.login(mockReq, mockRes, mockNext))
         .rejects.toThrow(new AppError('Credenciais inválidas', 401));
 
       expect(mockAuthService.comparePassword).toHaveBeenCalledWith(loginData.password, mockUser.password);
@@ -142,7 +142,7 @@ describe('AuthController', () => {
       mockAuthService.comparePassword = jest.fn().mockResolvedValue(true);
 
       // Act & Assert
-      await expect(authController.login(mockReq, mockRes))
+      await expect(authController.login(mockReq, mockRes, mockNext))
         .rejects.toThrow(new AppError('Conta desativada', 401));
     });
   });
@@ -172,7 +172,7 @@ describe('AuthController', () => {
       });
 
       // Act
-      await authController.register(mockReq, mockRes);
+      await authController.register(mockReq, mockRes, mockNext);
 
       // Assert
       expect(mockUserService.findByEmail).toHaveBeenCalledWith(registerData.email);
@@ -204,7 +204,7 @@ describe('AuthController', () => {
       });
 
       // Act & Assert
-      await expect(authController.register(mockReq, mockRes))
+      await expect(authController.register(mockReq, mockRes, mockNext))
         .rejects.toThrow(new AppError('Email já cadastrado', 400));
 
       expect(mockUserService.create).not.toHaveBeenCalled();
@@ -214,7 +214,7 @@ describe('AuthController', () => {
   describe('logout', () => {
     it('deve fazer logout com sucesso', async () => {
       // Act
-      await authController.logout(mockReq, mockRes);
+      await authController.logout(mockReq, mockRes, mockNext);
 
       // Assert
       expect(mockRes.json).toHaveBeenCalledWith({

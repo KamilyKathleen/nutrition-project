@@ -1,5 +1,5 @@
 /**
- * 📧 MODELO DE NOTIFICAÇÕES
+ * MODELO DE NOTIFICAÇÕES
  * =========================
  * Sistema completo de notificações para usuários
  */
@@ -7,7 +7,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 /**
- * 📧 TIPOS DE NOTIFICAÇÃO
+ * TIPOS DE NOTIFICAÇÃO
  */
 export enum NotificationType {
   CONSULTATION_REMINDER = 'consultation_reminder',
@@ -16,13 +16,12 @@ export enum NotificationType {
   DIET_PLAN_CREATED = 'diet_plan_created',
   DIET_PLAN_UPDATED = 'diet_plan_updated',
   ASSESSMENT_DUE = 'assessment_due',
-  WELCOME_EMAIL = 'welcome_email',
   PASSWORD_RESET = 'password_reset',
   SYSTEM_ANNOUNCEMENT = 'system_announcement'
 }
 
 /**
- * 📧 STATUS DA NOTIFICAÇÃO
+ * STATUS DA NOTIFICAÇÃO
  */
 export enum NotificationStatus {
   PENDING = 'pending',
@@ -32,16 +31,17 @@ export enum NotificationStatus {
 }
 
 /**
- * 📧 CANAL DE NOTIFICAÇÃO
+ * CANAL DE NOTIFICAÇÃO
  */
 export enum NotificationChannel {
   EMAIL = 'email',
   SMS = 'sms',
-  PUSH = 'push'
+  PUSH = 'push',
+  IN_APP = 'in_app'
 }
 
 /**
- * 📧 INTERFACE DA NOTIFICAÇÃO
+ * INTERFACE DA NOTIFICAÇÃO
  */
 export interface INotification extends Document {
   userId: mongoose.Types.ObjectId;
@@ -71,7 +71,7 @@ export interface INotification extends Document {
 }
 
 /**
- * 📧 SCHEMA DA NOTIFICAÇÃO
+ * SCHEMA DA NOTIFICAÇÃO
  */
 const notificationSchema = new Schema<INotification>({
   userId: {

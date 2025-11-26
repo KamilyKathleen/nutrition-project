@@ -193,7 +193,7 @@ export class NotificationController {
   };
 
   /**
-   * 🗑️ Deletar notificação
+   * Deletar notificação
    */
   deleteNotification = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -266,7 +266,7 @@ export class NotificationController {
   };
 
   /**
-   * 📊 Estatísticas de notificações do usuário
+   * Estatísticas de notificações do usuário
    */
   getUserNotificationStats = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -295,7 +295,7 @@ export class NotificationController {
   };
 
   /**
-   * 📊 Estatísticas gerais do sistema (admin apenas)
+   * Estatísticas gerais do sistema (admin apenas)
    */
   getSystemNotificationStats = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -373,7 +373,7 @@ export class NotificationController {
   };
 
   /**
-   * 🧹 Limpeza de notificações antigas (admin)
+   * Limpeza de notificações antigas (admin)
    */
   cleanupOldNotifications = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -429,31 +429,7 @@ export class NotificationController {
   // ========================================
 
   /**
-   * 👋 Enviar boas-vindas
-   */
-  sendWelcomeNotification = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { userId } = req.body;
-
-      const notification = await this.notificationService.sendWelcomeEmail(userId);
-
-      res.json({
-        success: true,
-        message: 'Email de boas-vindas enviado',
-        data: notification
-      });
-
-    } catch (error) {
-      console.error('❌ Erro ao enviar boas-vindas:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro interno do servidor'
-      });
-    }
-  };
-
-  /**
-   * ⏰ Enviar lembrete de consulta
+   * Enviar lembrete de consulta
    */
   sendConsultationReminder = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -480,7 +456,7 @@ export class NotificationController {
   };
 
   /**
-   * 📊 Obter contadores rápidos
+   * Obter contadores rápidos
    */
   getNotificationCounters = async (req: Request, res: Response): Promise<void> => {
     try {

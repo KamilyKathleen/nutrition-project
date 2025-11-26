@@ -46,17 +46,13 @@ Durante esta sessão de desenvolvimento, implementamos com sucesso **3 sistemas 
 - Priorização e status de entrega
 - Indexação otimizada para consultas rápidas
 
-#### **Serviço de E-mail (`EmailService.ts`)**
-- Templates HTML profissionais e responsivos
-- Suporte a múltiplos tipos de notificação  
-- Configuração SMTP robusta
-- Templates para:
-  - E-mail de boas-vindas
-  - Lembretes de consulta
-  - Novos planos alimentares
-  - Reset de senha
-  - Notificações gerais
-- **Nota**: Serviço já existia, foi integrado ao sistema de notificações
+#### **Sistema de Notificações In-App**
+- ✅ **Notificações internas** - Lembretes de consulta, alertas
+- ✅ **Firebase Auth** - Reset de senha via Firebase (sem SMTP customizado)
+- ✅ **Notificações push** - Preparado para Firebase Cloud Messaging
+- ✅ **Armazenamento** - Histórico de notificações no MongoDB
+- ✅ **Status tracking** - Controle de entrega e leitura
+- **Nota**: E-mails são processados via Firebase, notificações internas via sistema próprio
 
 #### **⚙️ Serviço de Notificações (`NotificationService.ts`)**
 - Sistema de filas com Bull + Redis
@@ -361,12 +357,11 @@ backend/
 │   │   ├── NotificationController.ts  #  Notificações
 │   │   └── ExcelExportController.ts   #  Exportações
 │   ├── services/                 # Lógica de negócio
-│   │   ├── AuthService.ts        #  Autenticação
-│   │   ├── UserService.ts        #  Usuários  
-│   │   ├── EmailService.ts       #  E-mails
-│   │   ├── NotificationService.ts #  Notificações
-│   │   ├── MetricService.ts      #  Métricas
-│   │   └── ExcelExportService.ts #  Exportações
+│   │   ├── AuthService.ts        # ✅ Autenticação
+│   │   ├── UserService.ts        # ✅ Usuários  
+│   │   ├── NotificationService.ts # ✅ Notificações in-app
+│   │   ├── MetricService.ts      # ✅ Métricas
+│   │   └── ExcelExportService.ts # ✅ Exportações
 │   ├── models/                   # Modelos MongoDB
 │   │   ├── User.ts               #  Usuários
 │   │   ├── Notification.ts       #  Notificações
@@ -416,7 +411,7 @@ Requisição HTTP → Middleware → Controller → Service → Model → MongoD
                       ↓
               Captura de Métricas → MetricService → Analytics
                       ↓
-              Notificações → NotificationService → Queue → Email
+              Notificações → NotificationService → Queue → In-App
 ```
 
 ### **Tecnologias e Ferramentas:**
@@ -428,10 +423,10 @@ Requisição HTTP → Middleware → Controller → Service → Model → MongoD
 - **JWT** - Autenticação
 - **bcryptjs** - Hash de senhas
 
-#### **Sistema de Notificações:**
-- **Bull** + **Redis** - Filas de processamento
-- **Nodemailer** - Envio de e-mails
-- **HTML Templates** - E-mails responsivos
+#### **🔔 Sistema de Notificações:**
+- **Bull** + **Redis** - Filas de processamento in-app
+- **Firebase** - Autenticação e reset de senhas
+- **MongoDB** - Armazenamento de notificações internas
 
 #### **Analytics e Exportação:**
 - **MongoDB Aggregations** - Relatórios

@@ -20,7 +20,7 @@ const notificationController = new NotificationController();
 router.use(authenticate);
 
 // ================================
-// 🎯 VALIDAÇÕES
+// VALIDAÇÕES
 // ================================
 
 /**
@@ -113,7 +113,7 @@ const dateRangeValidation = [
 ];
 
 // ================================
-// 🎯 ROTAS PRINCIPAIS - CRUD
+// ROTAS PRINCIPAIS - CRUD
 // ================================
 
 /**
@@ -193,26 +193,11 @@ router.post('/send-test',
 );
 
 // ================================
-// 🎯 ROTAS DE CONVENIÊNCIA
+// ROTAS DE CONVENIÊNCIA
 // ================================
 
 /**
- * 👋 Enviar notificação de boas-vindas
- */
-router.post('/welcome',
-  authorize(UserRole.ADMIN),
-  [
-    body('userId')
-      .isMongoId()
-      .withMessage('ID do usuário inválido')
-  ],
-  validateRequest,
-  auditSensitiveAccess('notification_welcome', 'USER', (req) => req.body.userId),
-  notificationController.sendWelcomeNotification
-);
-
-/**
- * ⏰ Enviar lembrete de consulta
+ * Enviar lembrete de consulta
  */
 router.post('/consultation-reminder',
   authorize([UserRole.NUTRITIONIST, UserRole.ADMIN]),
@@ -263,7 +248,7 @@ router.get('/stats/system',
 );
 
 // ================================
-// 🎯 ROTAS ADMINISTRATIVAS
+// ROTAS ADMINISTRATIVAS
 // ================================
 
 /**

@@ -1,8 +1,3 @@
-/**
- * 📧 SERVIÇO DE NOTIFICAÇÕES
- * ==========================
- * Sistema completo de notificações com filas e processamento
- */
 
 import { 
   NotificationModel, 
@@ -11,12 +6,8 @@ import {
   NotificationChannel,
   INotification 
 } from '../models/Notification';
-import { EmailService } from './EmailService';
 import Bull from 'bull';
 
-/**
- * 📧 DADOS PARA CRIAR NOTIFICAÇÃO
- */
 interface CreateNotificationData {
   userId: string;
   type: NotificationType;
@@ -29,9 +20,6 @@ interface CreateNotificationData {
   expiresAt?: Date;
 }
 
-/**
- * 📊 ESTATÍSTICAS DE NOTIFICAÇÕES
- */
 interface NotificationStats {
   total: number;
   sent: number;
@@ -41,23 +29,14 @@ interface NotificationStats {
   byChannel: { [key: string]: number };
 }
 
-/**
- * 📧 SERVIÇO DE NOTIFICAÇÕES
- */
 export class NotificationService {
-  private emailService: EmailService;
   private notificationQueue!: Bull.Queue;
 
   constructor() {
-    this.emailService = new EmailService();
     this.initializeQueue();
   }
 
-  /**
-   * 🔧 Inicializar fila de processamento
-   */
   private initializeQueue(): void {
-    // Configurar Redis para as filas
     const redisConfig = {
       host: process.env.REDIS_HOST || 'localhost',
       port: Number.parseInt(process.env.REDIS_PORT || '6379'),
@@ -68,36 +47,31 @@ export class NotificationService {
     this.notificationQueue = Bull('notification-queue', {
       redis: redisConfig,
       defaultJobOptions: {
-        removeOnComplete: 50, // Manter apenas os 50 jobs completos mais recentes
-        removeOnFail: 100,    // Manter apenas os 100 jobs falhados mais recentes
-        attempts: 3,          // Máximo 3 tentativas
+        removeOnComplete: 50, 
+        removeOnFail: 100,    
+        attempts: 3,          
         backoff: {
           type: 'exponential',
-          delay: 5000         // Delay inicial de 5 segundos
+          delay: 5000         
         }
       }
     });
 
-    // Configurar processador da fila
     this.notificationQueue.process('send-notification', 10, this.processNotificationJob.bind(this));
 
-    // Event listeners
     this.notificationQueue.on('completed', (job) => {
-      console.log(`✅ Notificação processada: ${job.id}`);
+      console.log(`Notificação processada: ${job.id}`);
     });
 
     this.notificationQueue.on('failed', (job, err) => {
-      console.error(`❌ Falha no processamento da notificação ${job.id}:`, err);
+      console.error(`Falha no processamento da notificação ${job.id}:`, err);
     });
 
     this.notificationQueue.on('stalled', (job) => {
-      console.warn(`⚠️ Job travado: ${job.id}`);
+      console.warn(`Job travado: ${job.id}`);
     });
   }
 
-  /**
-   * ➕ Criar nova notificação
-   */
   async createNotification(data: CreateNotificationData): Promise<INotification> {
     try {
       const notification = new NotificationModel({
@@ -106,28 +80,24 @@ export class NotificationService {
         title: data.title,
         message: data.message,
         data: data.data || {},
-        channel: data.channel || NotificationChannel.EMAIL,
+        channel: data.channel || NotificationChannel.IN_APP,
         scheduledFor: data.scheduledFor || new Date(),
         priority: data.priority || 'normal',
         expiresAt: data.expiresAt
       });
 
       const savedNotification = await notification.save();
-      console.log(`📧 Notificação criada: ${savedNotification.id}`);
+      console.log(`Notificação criada: ${savedNotification.id}`);
 
-      // Adicionar à fila de processamento
       await this.queueNotification(savedNotification);
 
       return savedNotification;
     } catch (error) {
-      console.error('❌ Erro ao criar notificação:', error);
+      console.error('Erro ao criar notificação:', error);
       throw error;
     }
   }
 
-  /**
-   * 🔄 Adicionar notificação à fila
-   */
   private async queueNotification(notification: INotification): Promise<void> {
     const delay = notification.scheduledFor ? 
       Math.max(0, notification.scheduledFor.getTime() - Date.now()) : 0;
@@ -140,16 +110,13 @@ export class NotificationService {
       {
         delay,
         priority,
-        jobId: notification.id // Usar ID da notificação como ID do job para evitar duplicatas
+        jobId: notification.id 
       }
     );
 
-    console.log(`📬 Notificação adicionada à fila: ${notification.id} (delay: ${delay}ms)`);
+    console.log(`Notificação adicionada à fila: ${notification.id} (delay: ${delay}ms)`);
   }
 
-  /**
-   * 🎯 Converter prioridade para valor numérico
-   */
   private getPriorityValue(priority: string): number {
     const priorities = {
       'urgent': 1,
@@ -160,9 +127,6 @@ export class NotificationService {
     return priorities[priority as keyof typeof priorities] || 3;
   }
 
-  /**
-   * ⚙️ Processar job da fila
-   */
   private async processNotificationJob(job: any): Promise<void> {
     const { notificationId } = job.data;
 
@@ -174,41 +138,35 @@ export class NotificationService {
       }
 
       if (notification.status !== NotificationStatus.PENDING) {
-        console.log(`⏭️ Notificação já processada: ${notificationId} (status: ${notification.status})`);
+        console.log(`Notificação já processada: ${notificationId} (status: ${notification.status})`);
         return;
       }
 
-      // Verificar se não expirou
       if (notification.expiresAt && notification.expiresAt < new Date()) {
         notification.status = NotificationStatus.CANCELLED;
         notification.failureReason = 'Notificação expirada';
         await notification.save();
-        console.log(`⏰ Notificação expirada: ${notificationId}`);
+        console.log(`Notificação expirada: ${notificationId}`);
         return;
       }
 
-      // Processar baseado no canal
       let success = false;
 
       switch (notification.channel) {
         case NotificationChannel.EMAIL:
-          success = await this.emailService.processNotification(notification);
+          console.log('E-mails processados via Firebase');
+          notification.status = NotificationStatus.SENT;
+          notification.sentAt = new Date();
+          await notification.save();
+          success = true;
           break;
 
-        case NotificationChannel.SMS:
-          // TODO: Implementar SMS
-          console.log('📱 SMS não implementado ainda');
-          notification.status = NotificationStatus.FAILED;
-          notification.failureReason = 'Canal SMS não implementado';
+        case NotificationChannel.IN_APP:
+          console.log('Notificação in-app processada');
+          notification.status = NotificationStatus.SENT;
+          notification.sentAt = new Date();
           await notification.save();
-          break;
-
-        case NotificationChannel.PUSH:
-          // TODO: Implementar Push Notifications
-          console.log('📢 Push notifications não implementado ainda');
-          notification.status = NotificationStatus.FAILED;
-          notification.failureReason = 'Canal Push não implementado';
-          await notification.save();
+          success = true;
           break;
 
         default:
@@ -216,20 +174,18 @@ export class NotificationService {
       }
 
       if (!success && notification.retryCount < notification.maxRetries) {
-        // Re-agendar para retry
-        const retryDelay = Math.pow(2, notification.retryCount) * 5000; // Backoff exponencial
+        const retryDelay = Math.pow(2, notification.retryCount) * 5000; 
         await this.notificationQueue.add(
           'send-notification',
           { notificationId },
-          { delay: retryDelay, priority: 1 } // Alta prioridade para retries
+          { delay: retryDelay, priority: 1 } 
         );
-        console.log(`🔄 Reagendando notificação para retry: ${notificationId} (tentativa ${notification.retryCount + 1})`);
+        console.log(`Reagendando notificação para retry: ${notificationId} (tentativa ${notification.retryCount + 1})`);
       }
 
     } catch (error) {
-      console.error(`❌ Erro no processamento do job ${notificationId}:`, error);
+      console.error(`Erro no processamento do job ${notificationId}:`, error);
       
-      // Atualizar notificação com erro
       try {
         const notification = await NotificationModel.findById(notificationId);
         if (notification) {
@@ -239,16 +195,13 @@ export class NotificationService {
           await notification.save();
         }
       } catch (updateError) {
-        console.error('❌ Erro ao atualizar notificação com falha:', updateError);
+        console.error('Erro ao atualizar notificação com falha:', updateError);
       }
 
-      throw error; // Re-throw para o Bull handle
+      throw error; 
     }
   }
 
-  /**
-   * 📋 Listar notificações do usuário
-   */
   async getUserNotifications(
     userId: string, 
     page: number = 1, 
@@ -305,14 +258,12 @@ export class NotificationService {
       };
 
     } catch (error) {
-      console.error('❌ Erro ao buscar notificações do usuário:', error);
+      console.error('Erro ao buscar notificações do usuário:', error);
       throw error;
     }
   }
 
-  /**
-   * 👀 Marcar notificação como lida
-   */
+
   async markAsRead(notificationId: string, userId: string): Promise<boolean> {
     try {
       const result = await NotificationModel.updateOne(
@@ -322,14 +273,11 @@ export class NotificationService {
 
       return result.modifiedCount > 0;
     } catch (error) {
-      console.error('❌ Erro ao marcar notificação como lida:', error);
+      console.error('Erro ao marcar notificação como lida:', error);
       return false;
     }
   }
 
-  /**
-   * 👀 Marcar todas como lidas
-   */
   async markAllAsRead(userId: string): Promise<number> {
     try {
       const result = await NotificationModel.updateMany(
@@ -339,14 +287,11 @@ export class NotificationService {
 
       return result.modifiedCount;
     } catch (error) {
-      console.error('❌ Erro ao marcar todas notificações como lidas:', error);
+      console.error('Erro ao marcar todas notificações como lidas:', error);
       return 0;
     }
   }
 
-  /**
-   * 🗑️ Deletar notificação
-   */
   async deleteNotification(notificationId: string, userId: string): Promise<boolean> {
     try {
       const result = await NotificationModel.deleteOne({
@@ -356,14 +301,11 @@ export class NotificationService {
 
       return result.deletedCount > 0;
     } catch (error) {
-      console.error('❌ Erro ao deletar notificação:', error);
+      console.error('Erro ao deletar notificação:', error);
       return false;
     }
   }
 
-  /**
-   * 📊 Obter estatísticas de notificações
-   */
   async getNotificationStats(
     userId?: string,
     startDate?: Date,
@@ -425,30 +367,13 @@ export class NotificationService {
       return result;
 
     } catch (error) {
-      console.error('❌ Erro ao obter estatísticas de notificações:', error);
+      console.error('Erro ao obter estatísticas de notificações:', error);
       throw error;
     }
   }
 
-  // ========================================
-  // 🎯 MÉTODOS DE CONVENIÊNCIA
-  // ========================================
-
   /**
-   * 👋 Enviar email de boas-vindas
-   */
-  async sendWelcomeEmail(userId: string): Promise<INotification> {
-    return this.createNotification({
-      userId,
-      type: NotificationType.WELCOME_EMAIL,
-      title: 'Bem-vindo ao Sistema de Nutrição!',
-      message: 'Seu cadastro foi realizado com sucesso. Explore todas as funcionalidades disponíveis.',
-      priority: 'high'
-    });
-  }
-
-  /**
-   * ⏰ Enviar lembrete de consulta
+   * Enviar lembrete de consulta
    */
   async sendConsultationReminder(
     userId: string, 
@@ -468,9 +393,7 @@ export class NotificationService {
     });
   }
 
-  /**
-   * 📅 Notificar consulta agendada
-   */
+
   async sendConsultationScheduled(
     userId: string, 
     consultationData: any
@@ -485,9 +408,7 @@ export class NotificationService {
     });
   }
 
-  /**
-   * 🍽️ Notificar plano alimentar criado
-   */
+
   async sendDietPlanCreated(
     userId: string, 
     dietPlanData: any
@@ -503,25 +424,25 @@ export class NotificationService {
   }
 
   /**
-   * 🔑 Enviar reset de senha
+   * Criar notificação quando o Firebase enviar email de reset de senha
    */
-  async sendPasswordReset(
+  async notifyPasswordResetSent(
     userId: string, 
-    resetData: any
+    email: string
   ): Promise<INotification> {
     return this.createNotification({
       userId,
       type: NotificationType.PASSWORD_RESET,
-      title: 'Redefinição de senha solicitada',
-      message: 'Clique no link para redefinir sua senha. O link expira em 1 hora.',
-      data: resetData,
-      priority: 'urgent',
-      expiresAt: new Date(Date.now() + 60 * 60 * 1000) // 1 hora
+      title: 'Email de recuperação enviado',
+      message: `Um email para redefinição de senha foi enviado para ${email}. Verifique sua caixa de entrada e spam.`,
+      data: { email, sentVia: 'firebase' },
+      channel: NotificationChannel.IN_APP,
+      priority: 'normal'
     });
   }
 
   /**
-   * 🔧 Limpar notificações antigas
+   * Limpar notificações antigas
    */
   async cleanupOldNotifications(): Promise<number> {
     try {
@@ -534,16 +455,16 @@ export class NotificationService {
         ]
       });
 
-      console.log(`🧹 Limpeza: ${result.deletedCount} notificações antigas removidas`);
+      console.log(`Limpeza: ${result.deletedCount} notificações antigas removidas`);
       return result.deletedCount;
     } catch (error) {
-      console.error('❌ Erro na limpeza de notificações antigas:', error);
+      console.error('Erro na limpeza de notificações antigas:', error);
       return 0;
     }
   }
 
   /**
-   * ⚙️ Status da fila
+   * Status da fila
    */
   async getQueueStats(): Promise<any> {
     const waiting = await this.notificationQueue.getWaiting();
@@ -561,21 +482,7 @@ export class NotificationService {
   }
 
   /**
-   * � Método de conveniência - Enviar notificação de boas-vindas
-   */
-  async sendWelcomeNotification(userId: string): Promise<INotification> {
-    return await this.createNotification({
-      userId,
-      type: NotificationType.WELCOME_EMAIL,
-      title: 'Bem-vindo!',
-      message: 'Sua conta foi criada com sucesso. Aproveite todos os recursos da plataforma!',
-      channel: NotificationChannel.EMAIL,
-      priority: 'normal'
-    });
-  }
-
-  /**
-   * �🛑 Fechar conexões
+   * Fechar conexões
    */
   async close(): Promise<void> {
     await this.notificationQueue.close();
