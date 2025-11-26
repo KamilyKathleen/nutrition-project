@@ -3,8 +3,7 @@
 import { useState, useEffect } from "react";
 import { FaBars, FaTimes, FaInstagram, FaGlobe } from "react-icons/fa";
 import Image from "next/image";
-import Logo from "@/public/logoipsum.png";
-import LogoWhite from "@/public/logoipsum-white.png";
+import Logo from "@/public/logo.png";
 import Link from "next/link";
 
 export default function Header() {
@@ -55,8 +54,8 @@ export default function Header() {
                         className="flex flex-col items-center"
                     >
                         <Image
-                            src={color ? Logo : LogoWhite}
-                            className="w-60"
+                            src={Logo}
+                            className="w-20"
                             alt="Logo"
                         />
                     </Link>
@@ -72,46 +71,32 @@ export default function Header() {
                     </li>
                     <li className="hover:border-b-2 hover:border-mintGreen">
                         <Link
-                            href='/pages/test'
+                            href='/pages/frequentlyAsked'
                             className="px-3 py-2"
                         >
-                            Página 1
+                            Perguntas Frequentes
                         </Link>
                     </li>
                     <li className="hover:border-b-2 hover:border-mintGreen">
                         <Link
-                            href='/pages/test'
+                            href='/pages/dashboard'
                             className="px-3 py-2"
                         >
-                            Página 2
+                            Dashboard
                         </Link>
                     </li>
                     <li className="hover:border-b-2 hover:border-mintGreen">
                         <Link
-                            href='/pages/test'
+                            href='/pages/blog'
                             className="px-3 py-2"
                         >
-                            Página 3
+                            Blog
                         </Link>
                     </li>
                 </ul>
                 <div className="flex items-center gap-2">
-                    {/* <Link
-                        href="https://www.instagram.com/emilereciclagem?igsh=MWdpOTd3cGlkcXM4YQ=="
-                        target="_blank"
-                        className="bg-casal-yellow p-2 rounded-full hover:bg-pink-700 hover:text-white"
-                    >
-                        <FaInstagram className="size-7" />
-                    </Link>
                     <Link
-                        href="https://emile.net.br/"
-                        target="_blank"
-                        className="p-2 rounded-full hover:bg-mintGreen hover:text-white"
-                    >
-                        <FaGlobe className="size-7" />
-                    </Link> */}
-                    <Link
-                        href='/pages/test'
+                        href='/pages/login'
                         className="px-4 py-2 font-semibold bg-mintGreen text-coalGray rounded hover:bg-petroleumGreen hover:text-white transition flex items-center justify-center"
                     >
                         Entrar
@@ -131,8 +116,8 @@ export default function Header() {
                         className="flex flex-col items-center"
                     >
                         <Image
-                            src={menuOpen || color ? Logo : LogoWhite}
-                            className="w-60"
+                            src={Logo}
+                            className="w-24"
                             alt="Logo"
                         />
                     </Link>
@@ -156,52 +141,38 @@ export default function Header() {
                         <hr className="w-[60%] mx-auto text-mintGreen" />
                         <li>
                             <Link
-                                href='/pages/test'
+                                href='/pages/frequentlyAsked'
                                 className="px-3 py-2 text-coalGray hover:border-b-2 hover:border-mintGreen"
                                 onClick={toggleMenu}
                             >
-                                Página 1
+                                Perguntas Frequentes
                             </Link>
                         </li>
                         <hr className="w-[60%] mx-auto text-mintGreen" />
                         <li>
                             <Link
-                                href='/pages/test'
+                                href='/pages/dashboard'
                                 className="px-3 py-2 text-coalGray hover:border-b-2 hover:border-mintGreen"
                                 onClick={toggleMenu}
                             >
-                                Página 2
+                                Dashboard
                             </Link>
                         </li>
                         <hr className="w-[60%] mx-auto text-mintGreen" />
                         <li>
                             <Link
-                                href='/pages/test'
+                                href='/pages/blog'
                                 className="px-3 py-2 text-coalGray hover:border-b-2 hover:border-mintGreen"
                                 onClick={toggleMenu}
                             >
-                                Página 3
+                                Blog
                             </Link>
                         </li>
                         <hr className="w-[60%] mx-auto text-mintGreen" />
                     </ul>
                     <div className="flex items-center gap-2 justify-center mt-8 mr-2">
-                        {/* <Link
-                            href="https://www.instagram.com/emilereciclagem?igsh=MWdpOTd3cGlkcXM4YQ=="
-                            target="_blank"
-                            className="p-2 rounded-full hover:bg-pink-700 hover:text-white"
-                        >
-                            <FaInstagram className="size-6" />
-                        </Link>
                         <Link
-                            href="https://emile.net.br/"
-                            target="_blank"
-                            className="p-2 rounded-full hover:bg-mintGreen hover:text-white"
-                        >
-                            <FaGlobe className="size-6" />
-                        </Link> */}
-                        <Link
-                            href='/pages/test'
+                            href='/pages/login'
                             className="px-4 py-2 font-semibold bg-mintGreen text-coalGray rounded hover:bg-petroleumGreen hover:text-white transition flex items-center justify-center"
                             onClick={toggleMenu}
                         >

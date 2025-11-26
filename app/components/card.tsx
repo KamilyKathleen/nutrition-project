@@ -11,9 +11,10 @@ interface CardProps {
     title: string;
     subtitle: string;
     page: string;
+    button: string;
 }
 
-export default function Card({ image, description, title, subtitle, page }: CardProps) {
+export default function Card({ image, description, title, subtitle, page, button }: CardProps) {
 
     return (
         <div className="rounded-lg shadow-lg max-w-[350px] mx-auto">
@@ -21,12 +22,12 @@ export default function Card({ image, description, title, subtitle, page }: Card
                 <Image
                     src={image}
                     alt="Card Image"
-                    className="w-full h-[230px] object-cover mb-2"
+                    className="w-full h-[230px] object-cover mb-2 rounded-t-lg"
                 />
             )}
             <div className='w-[90%] mx-auto p-4'>
-                <h3 className="ml-2 text-xl ">{title}</h3>
-                <h3 className="ml-2 text-xl text-petroleumGreen font-bold uppercase">{subtitle}</h3>
+                <h3 className="text-xl ">{title}</h3>
+                <h3 className="text-xl text-petroleumGreen font-bold uppercase">{subtitle}</h3>
                 <hr className='my-4 text-gray-200' />
                 <p className="">{description}</p>
                 <div className="flex justify-center my-4">
@@ -34,9 +35,8 @@ export default function Card({ image, description, title, subtitle, page }: Card
                         href={page}
                         className="border-2 text-petroleumGreen border-mintGreen hover:bg-petroleumGreen hover:border-petroleumGreen hover:text-white text-sm font-semibold py-2 px-3 rounded-md flex items-center"
                     >
-
                         <FaPlus className="size-3 mr-2" />
-                        Saiba Mais
+                        {button}
                     </Link>
                 </div>
             </div>

@@ -1,8 +1,12 @@
+'use client'
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Head from "./head";
 import Header from "@/app/components/header";
 import Footer from "@/app/components/footer";
+import { usePathname } from "next/navigation";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,22 +18,28 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Site Nutrição",
-  description: "Algo sobre nutrição",
-};
+// export const metadata: Metadata = {
+//   title: "NutriPlan",
+//   description: "Projeto A3 - Una Sete Lagoas",
+// };
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
+  const pathName = usePathname();
+  const noHeaderFooterRoutes = ["/pages/login", "/pages/register"];
+  const showHeaderFooter = !noHeaderFooterRoutes.includes(pathName);
+
   return (
     <html lang="pt-br">
+      <Head/>
       <body>
-        <Header/>
+        {showHeaderFooter && <Header/>}
         {children}
-        <Footer/>
+        {showHeaderFooter && <Footer/>}
       </body>
     </html>
   );
