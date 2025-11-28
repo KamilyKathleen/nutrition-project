@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import Breadcrumb from "@/app/components/breadcrumb";
-import Banner from "../../img/banner.jpeg";
+import Banner from "../../img/banner-dashboard.jpg";
 import NutritionistDashboard from "./NutritionistDashboard";
 import PatientDashboard from "./PatientDashboard";
 import { User, UserRole } from "./types";
+import Link from "next/link";
 
 // Simulação de autenticação. Em um app real, isso viria de um Context ou hook de autenticação.
 const mockUsers: Record<UserRole, User> = {
@@ -42,9 +43,16 @@ export default function Dashboard() {
                     currentUser.role === 'nutritionist' ? <NutritionistDashboard /> : <PatientDashboard />
                 ) : (
                     <div className="text-center py-16 bg-white rounded-lg shadow-md">
-                        <h2 className="text-2xl font-bold text-gray-800">Você não está logado</h2>
+                        <h2 className="text-2xl font-bold text-gray-800 mb-4">Você não está logado</h2>
                         <p className="text-gray-600 mt-2">
-                            Por favor, <span className="font-semibold text-blue-600">faça seu login</span> para continuar.
+                            Por favor,&nbsp;
+                            <Link
+                                href='/pages/login'
+                                className="font-semibold text-petroleumGreen hover:underline"
+                            >
+                                faça seu login
+                            </Link>
+                            &nbsp;para continuar.
                         </p>
                     </div>
                 )}
