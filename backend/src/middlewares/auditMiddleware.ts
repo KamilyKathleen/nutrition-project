@@ -25,12 +25,15 @@ export const auditSensitiveAccess = (
             const ipAddress = req.ip || req.connection.remoteAddress;
             const userAgent = req.get('User-Agent');
             
+            // Se resourceId é 'me' ou string especial, usar userId como resourceId
+            const finalResourceId = resourceId === 'me' ? user.userId : resourceId;
+            
             await AuditService.log({
               userId: user.userId,
               userEmail: user.email,
               action,
               resourceType,
-              resourceId,
+              resourceId: finalResourceId,
               ...(ipAddress && { ipAddress }),
               ...(userAgent && { userAgent }),
               sensitive: isSensitiveAction(action),

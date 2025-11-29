@@ -3,12 +3,12 @@ import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDhGT0bMYDrOnIjSfUgWUwqRgELHhqmMKs",
+  apiKey: "AIzaSyAntjb33qcT3npeTn0nytftfJhv5ONbyQs",
   authDomain: "nutriplan-cce27.firebaseapp.com",
   projectId: "nutriplan-cce27",
   storageBucket: "nutriplan-cce27.firebasestorage.app",
-  messagingSenderId: "588542618900",
-  appId: "1:588542618900:web:5a8e88b5a4c8c5b6b7c3c2"
+  messagingSenderId: "80744976918",
+  appId: "1:80744976918:web:cf5aa2f33d1492a7491b37"
 };
 
 // Initialize Firebase

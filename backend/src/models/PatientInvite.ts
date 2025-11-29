@@ -48,8 +48,8 @@ const patientInviteSchema = new Schema<IPatientInvite>({
   },
   status: {
     type: String,
-    enum: ['PENDING', 'ACCEPTED', 'EXPIRED', 'CANCELLED'],
-    default: 'PENDING'
+    enum: ['pending', 'accepted', 'expired', 'cancelled'],
+    default: 'pending'
   } as any,
   expiresAt: {
     type: Date,

@@ -32,9 +32,11 @@ export class DietPlanController {
         data: plan
       });
     } catch (error: any) {
+      console.error('🔥 Erro detalhado na criação do plano:', error);
       res.status(error.statusCode || 500).json({
         success: false,
-        message: error.message || 'Erro interno do servidor'
+        message: error.message || 'Erro ao criar plano dietético',
+        error: process.env.NODE_ENV === 'development' ? error.stack : undefined
       });
     }
   };
@@ -48,6 +50,8 @@ export class DietPlanController {
       const page = Number.parseInt(req.query.page as string) || 1;
       const limit = Number.parseInt(req.query.limit as string) || 10;
       
+      console.log('🔍 Controller: nutritionistId =', nutritionistId);
+      
       // Filtros opcionais
       const filters: {
         isActive?: boolean;
@@ -60,6 +64,8 @@ export class DietPlanController {
       if (req.query.search) filters.search = req.query.search as string;
 
       const result = await DietPlanService.findByNutritionistId(nutritionistId, page, limit, filters);
+
+      console.log('🔍 Controller: resultado =', result.plans.length, 'planos');
 
       res.json({
         success: true,

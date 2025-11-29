@@ -15,7 +15,7 @@ export interface PatientInvite {
   patientEmail: string;
   patientName: string;
   inviteToken: string;
-  status: 'PENDING' | 'ACCEPTED' | 'EXPIRED' | 'CANCELLED';
+  status: 'pending' | 'accepted' | 'expired' | 'cancelled';
   expiresAt: Date;
   sentAt: Date;
   acceptedAt?: Date;
@@ -33,9 +33,22 @@ export class PatientInviteService {
    */
   async createInvite(data: CreateInviteRequest, nutritionistId: string): Promise<PatientInvite> {
     try {
-      // Validar que tem email OU nome
-      if (!data.patientEmail && !data.patientName) {
-        throw new AppError('Email ou nome do paciente é obrigatório', 400);
+      // Validar que tem email
+      if (!data.patientEmail) {
+        throw new AppError('Email do paciente é obrigatório', 400);
+      }
+
+      // 🔍 VALIDAR SE O USUÁRIO EXISTE NO SISTEMA
+      const { UserService } = await import('../services/UserService');
+      const userService = new UserService();
+      
+      const existingUser = await userService.findByEmail(data.patientEmail);
+      if (!existingUser) {
+        throw new AppError('O paciente deve ter uma conta no sistema antes de receber um convite. Peça para ele se registrar primeiro.', 400);
+      }
+
+      if (existingUser.role !== 'patient') {
+        throw new AppError('O usuário deve ter role de paciente para receber convites', 400);
       }
 
       // Gerar token único
@@ -50,7 +63,7 @@ export class PatientInviteService {
         const existingInvite = await PatientInviteModel.findOne({
           nutritionistId: new mongoose.Types.ObjectId(nutritionistId),
           patientEmail: data.patientEmail,
-          status: 'PENDING'
+          status: 'pending'
         });
 
         if (existingInvite) {
@@ -65,7 +78,7 @@ export class PatientInviteService {
         inviteToken,
         expiresAt,
         message: data.message,
-        status: 'PENDING'
+        status: 'pending'
       });
 
       const savedInvite = await invite.save();
@@ -93,7 +106,43 @@ export class PatientInviteService {
   }
 
   /**
-   * 📋 LISTAR CONVITES DO NUTRICIONISTA
+   * � LISTAR CONVITES PENDENTES POR EMAIL
+   */
+  async getInvitesByEmail(email: string): Promise<PatientInvite[]> {
+    try {
+      const invites = await PatientInviteModel
+        .find({ 
+          patientEmail: email.toLowerCase(),
+          status: 'pending',
+          expiresAt: { $gt: new Date() } // Não expirados
+        })
+        .populate('nutritionistId', 'name email')
+        .sort({ createdAt: -1 })
+        .lean();
+
+      return invites.map(invite => ({
+        id: (invite._id as mongoose.Types.ObjectId).toString(),
+        nutritionistId: invite.nutritionistId.toString(),
+        patientEmail: invite.patientEmail || '',
+        patientName: invite.patientName || '',
+        inviteToken: invite.inviteToken,
+        status: invite.status as any,
+        expiresAt: invite.expiresAt,
+        sentAt: invite.sentAt,
+        acceptedAt: invite.acceptedAt,
+        message: invite.message,
+        createdAt: invite.createdAt,
+        updatedAt: invite.updatedAt,
+        nutritionist: (invite as any).nutritionistId // Dados populados do nutricionista
+      }));
+    } catch (error: any) {
+      console.error('Erro ao buscar convites por email:', error);
+      throw new AppError('Erro ao buscar convites', 500);
+    }
+  }
+
+  /**
+   * �📋 LISTAR CONVITES DO NUTRICIONISTA
    */
   async getInvitesByNutritionist(nutritionistId: string, status?: string): Promise<PatientInvite[]> {
     try {
@@ -111,7 +160,7 @@ export class PatientInviteService {
         .lean();
 
       return invites.map(invite => ({
-        id: invite._id.toString(),
+        id: (invite._id as mongoose.Types.ObjectId).toString(),
         nutritionistId: invite.nutritionistId.toString(),
         patientEmail: invite.patientEmail || '',
         patientName: invite.patientName || '',
@@ -142,7 +191,7 @@ export class PatientInviteService {
       if (!invite) return null;
 
       return {
-        id: invite._id.toString(),
+        id: (invite._id as mongoose.Types.ObjectId).toString(),
         nutritionistId: invite.nutritionistId.toString(),
         patientEmail: invite.patientEmail || '',
         patientName: invite.patientName || '',
@@ -171,17 +220,17 @@ export class PatientInviteService {
         throw new AppError('Convite não encontrado', 404);
       }
 
-      if ((invite as any).status !== 'PENDING') {
+      if ((invite as any).status !== 'pending') {
         throw new AppError('Este convite não está mais válido', 400);
       }
 
       if (invite.expiresAt < new Date()) {
-        (invite as any).status = 'EXPIRED';
+        (invite as any).status = 'expired';
         await invite.save();
         throw new AppError('Este convite expirou', 400);
       }
 
-      (invite as any).status = 'ACCEPTED';
+      (invite as any).status = 'accepted';
       invite.acceptedAt = new Date();
       await invite.save();
 
@@ -208,7 +257,133 @@ export class PatientInviteService {
   }
 
   /**
-   * ❌ CANCELAR CONVITE
+   * ✅ ACEITAR CONVITE POR ID
+   */
+  async acceptInviteById(inviteId: string): Promise<PatientInvite> {
+    try {
+      const invite = await PatientInviteModel.findById(inviteId);
+
+      if (!invite) {
+        throw new AppError('Convite não encontrado', 404);
+      }
+
+      if (invite.status !== 'pending') {
+        throw new AppError('Este convite não está mais válido', 400);
+      }
+
+      if (invite.expiresAt < new Date()) {
+        invite.status = 'expired';
+        await invite.save();
+        throw new AppError('Este convite expirou', 400);
+      }
+
+      // 🔄 CRIAR RELACIONAMENTO PACIENTE-NUTRICIONISTA
+      await this.createPatientRelationship(invite);
+
+      invite.status = 'accepted';
+      invite.acceptedAt = new Date();
+      await invite.save();
+
+      return {
+        id: (invite._id as mongoose.Types.ObjectId).toString(),
+        nutritionistId: invite.nutritionistId.toString(),
+        patientEmail: invite.patientEmail || '',
+        patientName: invite.patientName || '',
+        inviteToken: invite.inviteToken,
+        status: invite.status as any,
+        expiresAt: invite.expiresAt,
+        sentAt: invite.sentAt,
+        acceptedAt: invite.acceptedAt,
+        message: invite.message,
+        createdAt: invite.createdAt,
+        updatedAt: invite.updatedAt
+      } as PatientInvite;
+    } catch (error: any) {
+      if (error instanceof AppError) {
+        throw error;
+      }
+      throw new AppError('Erro ao aceitar convite', 500);
+    }
+  }
+
+  /**
+   * 🔗 CRIAR RELACIONAMENTO PACIENTE-NUTRICIONISTA
+   * Cria automaticamente o User (para login) e o Patient (dados do paciente)
+   */
+  private async createPatientRelationship(invite: any): Promise<void> {
+    try {
+      // Importar o PatientModel
+      const { PatientModel } = await import('../models/Patient');
+      const { UserService } = await import('../services/UserService');
+      
+      const userService = new UserService();
+
+      // Buscar o usuário pelo email - DEVE EXISTIR!
+      const user = await userService.findByEmail(invite.patientEmail);
+      
+      if (!user) {
+        throw new AppError('Usuário não encontrado. O paciente deve ter uma conta no sistema antes de aceitar o convite.', 404);
+      }
+
+      // Verificar se já existe um relacionamento
+      const existingPatient = await PatientModel.findOne({
+        email: invite.patientEmail,
+        nutritionistId: invite.nutritionistId
+      });
+
+      if (existingPatient) {
+        console.log(`📋 Relacionamento já existe entre ${invite.patientEmail} e nutricionista ${invite.nutritionistId}`);
+        return;
+      }
+
+      // Criar registro do paciente
+      const patientData = {
+        name: invite.patientName || user.name,
+        email: invite.patientEmail,
+        birthDate: new Date('1990-01-01'), // Data padrão - pode ser atualizada depois
+        gender: 'other', // Gênero padrão - pode ser atualizado depois
+        nutritionistId: invite.nutritionistId,
+        isActive: true
+      };
+
+      const newPatient = new PatientModel(patientData);
+      await newPatient.save();
+
+      console.log(`✅ Relacionamento criado: Paciente ${invite.patientEmail} vinculado ao nutricionista ${invite.nutritionistId}`);
+    } catch (error: any) {
+      console.error('❌ Erro ao criar relacionamento:', error);
+      // Não vamos falhar o aceite do convite por causa disso
+      // throw error;
+    }
+  }
+
+  /**
+   * ❌ REJEITAR CONVITE
+   */
+  async rejectInvite(inviteId: string): Promise<void> {
+    try {
+      const invite = await PatientInviteModel.findById(inviteId);
+
+      if (!invite) {
+        throw new AppError('Convite não encontrado', 404);
+      }
+
+      if (invite.status !== 'pending') {
+        throw new AppError('Este convite não está mais válido', 400);
+      }
+
+      invite.status = 'rejected';
+      await invite.save();
+    } catch (error: any) {
+      if (error instanceof AppError) {
+        throw error;
+      }
+      throw new AppError('Erro ao rejeitar convite', 500);
+    }
+  }
+
+  /**
+   * 🗑️ CANCELAR CONVITE
    */
   async cancelInvite(inviteId: string, nutritionistId: string): Promise<void> {
     try {
@@ -221,11 +396,11 @@ export class PatientInviteService {
         throw new AppError('Convite não encontrado', 404);
       }
 
-      if ((invite as any).status !== 'PENDING') {
+      if ((invite as any).status !== 'pending') {
         throw new AppError('Apenas convites pendentes podem ser cancelados', 400);
       }
 
-      (invite as any).status = 'CANCELLED';
+      (invite as any).status = 'cancelled';
       await invite.save();
     } catch (error: any) {
       if (error instanceof AppError) {

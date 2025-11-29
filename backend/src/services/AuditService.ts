@@ -40,13 +40,22 @@ const auditLogSchema = new Schema<IAuditLog>({
       'LOGIN',
       'LOGOUT',
       'ASSESSMENT_CREATE',
-      'ASSESSMENT_READ'
+      'ASSESSMENT_READ',
+      'diet_plan_create',
+      'diet_plan_read',
+      'diet_plan_update',
+      'diet_plan_delete',
+      'CREATE',
+      'READ',
+      'UPDATE',
+      'DELETE',
+      'LIST'
     ]
   },
   resourceType: {
     type: String,
     required: true,
-    enum: ['PATIENT', 'USER', 'ASSESSMENT']
+    enum: ['PATIENT', 'USER', 'ASSESSMENT', 'DIET_PLAN']
   },
   resourceId: {
     type: Schema.Types.ObjectId,
@@ -108,12 +117,17 @@ export class AuditService {
     sensitive?: boolean;
   }) {
     try {
+      // Validar se os IDs são ObjectIds válidos antes de criar
+      const isValidObjectId = (id: string) => mongoose.Types.ObjectId.isValid(id);
+      
       await AuditLogModel.create({
-        userId: new mongoose.Types.ObjectId(params.userId),
+        userId: isValidObjectId(params.userId) ? new mongoose.Types.ObjectId(params.userId) : null,
         userEmail: params.userEmail,
         action: params.action,
         resourceType: params.resourceType,
-        resourceId: new mongoose.Types.ObjectId(params.resourceId),
+        resourceId: params.resourceId && isValidObjectId(params.resourceId) 
+          ? new mongoose.Types.ObjectId(params.resourceId) 
+          : null,
         details: params.details || {},
         ipAddress: params.ipAddress,
         userAgent: params.userAgent,
@@ -122,6 +136,11 @@ export class AuditService {
       });
     } catch (error) {
       console.error('Erro ao registrar log de auditoria:', error);
+      console.error('Params recebidos:', {
+        userId: params.userId,
+        resourceId: params.resourceId,
+        action: params.action
+      });
       // Não falha a operação principal se auditoria falhar
     }
   }

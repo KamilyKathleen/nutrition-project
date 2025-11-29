@@ -24,9 +24,9 @@ interface AuthResult {
 }
 
 /**
- * 🔐 FIREBASE AUTHENTICATION MIDDLEWARE
- * =====================================
- * Middleware para verificar tokens Firebase nos endpoints da API
+ * 🔐 JWT AUTHENTICATION MIDDLEWARE
+ * ================================
+ * Middleware para verificar tokens JWT nos endpoints da API
  */
 
 export async function authMiddleware(request: NextRequest): Promise<AuthResult> {
@@ -42,32 +42,43 @@ export async function authMiddleware(request: NextRequest): Promise<AuthResult> 
 
     const token = authHeader.substring(7); // Remove "Bearer "
 
-    // Verificar token com Firebase Admin
-    const decodedToken = await adminAuth!.verifyIdToken(token);
+    // Verificar token JWT local
+    const jwt = await import('jsonwebtoken');
+    const { config } = await import('../config/environment');
+    
+    if (!config.JWT_SECRET) {
+      return {
+        success: false,
+        error: 'Configuração do servidor inválida'
+      };
+    }
+
+    const decodedToken = jwt.verify(token, config.JWT_SECRET) as any;
 
     return {
       success: true,
       user: {
-        uid: decodedToken.uid,
+        uid: decodedToken.userId,
         email: decodedToken.email || '',
-        name: decodedToken.name || decodedToken.email
+        name: decodedToken.name || decodedToken.email || '',
+        role: decodedToken.role
       }
     };
 
   } catch (error_: unknown) {
     console.error('Erro na autenticação:', error_);
     
-    if ((error_ as any)?.code === 'auth/id-token-expired') {
+    if ((error_ as any)?.name === 'TokenExpiredError') {
       return {
         success: false,
         error: 'Token expirado'
       };
     }
     
-    if ((error_ as any)?.code === 'auth/id-token-revoked') {
+    if ((error_ as any)?.name === 'JsonWebTokenError') {
       return {
         success: false,
-        error: 'Token revogado'
+        error: 'Token inválido'
       };
     }
 
@@ -183,13 +194,28 @@ export async function authenticate(req: AuthenticatedRequest, res: Response, nex
     }
 
     const token = authHeader.substring(7);
-    const decodedToken = await adminAuth!.verifyIdToken(token);
+    
+    // Importar JWT dinamicamente para evitar dependências circulares
+    const jwt = await import('jsonwebtoken');
+    const { config } = await import('../config/environment');
+    
+    if (!config.JWT_SECRET) {
+      console.error('JWT_SECRET não configurado');
+      return res.status(500).json({
+        success: false,
+        error: 'Configuração do servidor inválida'
+      });
+    }
+
+    // Verificar token JWT local
+    const decodedToken = jwt.verify(token, config.JWT_SECRET) as any;
 
     req.user = {
-      uid: decodedToken.uid,
-      userId: decodedToken.uid, // Alias for compatibility
+      uid: decodedToken.userId,
+      userId: decodedToken.userId,
       email: decodedToken.email || '',
-      name: decodedToken.name || decodedToken.email
+      name: decodedToken.name || decodedToken.email || '',
+      role: decodedToken.role
     };
 
     return next();
@@ -197,17 +223,17 @@ export async function authenticate(req: AuthenticatedRequest, res: Response, nex
   } catch (error_: unknown) {
     console.error('Erro na autenticação:', error_);
     
-    if ((error_ as any)?.code === 'auth/id-token-expired') {
+    if ((error_ as any)?.name === 'TokenExpiredError') {
       return res.status(401).json({
         success: false,
         error: 'Token expirado'
       });
     }
     
-    if ((error_ as any)?.code === 'auth/id-token-revoked') {
+    if ((error_ as any)?.name === 'JsonWebTokenError') {
       return res.status(401).json({
         success: false,
-        error: 'Token revogado'
+        error: 'Token inválido'
       });
     }
 
@@ -233,18 +259,32 @@ export function authorize(roles: string[] | string) {
         });
       }
 
-      const userRecord = await adminAuth!.getUser(req.user.uid);
-      const customClaims = userRecord.customClaims || {};
-      const userRole = customClaims.role as string;
+      // Usar o role do JWT em vez de buscar no Firebase para evitar problemas de sincronização
+      const userRole = req.user.role;
 
       if (!userRole || !rolesArray.includes(userRole)) {
+        // Tentar buscar no Firebase como fallback apenas se não há role no JWT
+        if (!userRole && req.user.uid && adminAuth) {
+          try {
+            const userRecord = await adminAuth.getUser(req.user.uid);
+            const customClaims = userRecord.customClaims || {};
+            const firebaseRole = customClaims.role as string;
+            
+            if (firebaseRole && rolesArray.includes(firebaseRole)) {
+              req.user.role = firebaseRole;
+              return next();
+            }
+          } catch (firebaseError) {
+            console.warn('Usuário não encontrado no Firebase, continuando com JWT role:', req.user.email);
+          }
+        }
+
         return res.status(403).json({
           success: false,
-          error: 'Acesso negado: permissões insuficientes'
+          error: `Acesso negado: permissões insuficientes. Role necessário: ${rolesArray.join(' ou ')}, Role atual: ${userRole || 'nenhum'}`
         });
       }
 
-      req.user.role = userRole;
       return next();
 
     } catch (error_: unknown) {

@@ -84,10 +84,11 @@ export class DietPlanService {
       
       return this.mapToResponse(savedPlan);
     } catch (error: any) {
+      console.error('🔥 Erro detalhado no DietPlanService:', error);
       if (error instanceof AppError) {
         throw error;
       }
-      throw new AppError('Erro ao criar plano dietético', 500);
+      throw new AppError(`Erro ao criar plano dietético: ${error.message}`, 500);
     }
   }
 
@@ -110,6 +111,9 @@ export class DietPlanService {
       // Construir query de filtros
       const query: any = { nutritionistId: new mongoose.Types.ObjectId(nutritionistId) };
       
+      console.log('🔍 Buscando planos para nutritionistId:', nutritionistId);
+      console.log('🔍 Query construída:', query);
+      
       if (filters?.isActive !== undefined) {
         query.isActive = filters.isActive;
       }
@@ -126,15 +130,26 @@ export class DietPlanService {
       }
 
       const [plans, total] = await Promise.all([
-        DietPlanModel
-          .find(query)
-          .populate('patientId', 'name email')
-          .sort({ createdAt: -1 })
-          .skip(skip)
-          .limit(limit)
-          .lean(),
+        DietPlanModel.aggregate([
+          { $match: query },
+          { 
+            $lookup: {
+              from: 'patients',
+              localField: 'patientId',
+              foreignField: '_id',
+              as: 'patientId'
+            }
+          },
+          { $unwind: { path: '$patientId', preserveNullAndEmptyArrays: true } },
+          { $sort: { createdAt: -1 } },
+          { $skip: skip },
+          { $limit: limit }
+        ]),
         DietPlanModel.countDocuments(query)
       ]);
+
+      console.log('🔍 Planos encontrados:', plans.length);
+      console.log('🔍 Total no banco:', total);
 
       return {
         plans: plans.map(plan => this.mapToResponse(plan)),
@@ -142,6 +157,7 @@ export class DietPlanService {
         pages: Math.ceil(total / limit)
       };
     } catch (error) {
+      console.error('🔥 Erro ao listar planos:', error);
       throw new AppError('Erro ao listar planos dietéticos', 500);
     }
   }
@@ -449,23 +465,30 @@ export class DietPlanService {
    * 🎯 FUNÇÃO AUXILIAR PARA MAPEAR RESPOSTA
    */
   private mapToResponse(plan: any): DietPlan {
-    return {
-      id: plan._id.toString(),
-      patientId: plan.patientId.toString(),
-      nutritionistId: plan.nutritionistId.toString(),
-      title: plan.title,
-      description: plan.description,
-      startDate: plan.startDate,
-      endDate: plan.endDate,
-      targetCalories: plan.targetCalories,
-      targetProteins: plan.targetProteins,
-      targetCarbohydrates: plan.targetCarbohydrates,
-      targetFats: plan.targetFats,
-      meals: plan.meals,
-      isActive: plan.isActive,
-      createdAt: plan.createdAt,
-      updatedAt: plan.updatedAt
-    } as DietPlan;
+    try {
+      console.log('🔍 Mapeando plano:', plan._id);
+      return {
+        id: plan._id.toString(),
+        patientId: plan.patientId?._id ? plan.patientId._id.toString() : plan.patientId?.toString() || plan.patientId,
+        nutritionistId: plan.nutritionistId?.toString() || plan.nutritionistId,
+        title: plan.title,
+        description: plan.description,
+        startDate: plan.startDate,
+        endDate: plan.endDate,
+        targetCalories: plan.targetCalories,
+        targetProteins: plan.targetProteins,
+        targetCarbohydrates: plan.targetCarbohydrates,
+        targetFats: plan.targetFats,
+        meals: plan.meals,
+        isActive: plan.isActive,
+        createdAt: plan.createdAt,
+        updatedAt: plan.updatedAt
+      } as DietPlan;
+    } catch (error) {
+      console.error('🔥 Erro no mapToResponse:', error);
+      console.log('🔍 Plan data:', plan);
+      throw error;
+    }
   }
 }
 

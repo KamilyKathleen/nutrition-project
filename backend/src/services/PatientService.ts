@@ -201,7 +201,55 @@ export class PatientService {
   }
 
   /**
-   * 🔐 VERIFICAR PROPRIEDADE DO PACIENTE
+   * � BUSCAR PACIENTE POR EMAIL
+   * Por que este método?
+   * - Permite ao paciente verificar se tem relacionamento
+   * - Usado para verificar vínculos nutricionista-paciente
+   */
+  async findByEmail(email: string): Promise<Patient | null> {
+    try {
+      console.log('🔍 Buscando paciente por email:', email);
+      console.log('🔍 Email normalizado:', email.toLowerCase());
+      
+      // Primeiro testar se existem pacientes
+      const allPatients = await PatientModel.aggregate([{ $match: {} }]);
+      console.log('🔍 Total de pacientes no banco:', allPatients.length);
+      console.log('🔍 Emails dos pacientes:', allPatients.map(p => p.email));
+      
+      const patients = await PatientModel.aggregate([
+        { 
+          $match: { 
+            email: email.toLowerCase(),
+            isActive: true 
+          }
+        },
+        { $limit: 1 }
+      ]);
+      
+      console.log('🔍 Pacientes encontrados com filtro:', patients.length);
+      if (patients.length > 0) {
+        console.log('🔍 Paciente encontrado:', patients[0]);
+      }
+      
+      const patient = patients[0];
+
+      if (!patient) {
+        return null;
+      }
+
+      return {
+        ...patient,
+        id: patient._id.toString(),
+        nutritionistId: patient.nutritionistId.toString()
+      } as Patient;
+    } catch (error) {
+      console.error('Erro ao buscar paciente por email:', error);
+      return null;
+    }
+  }
+
+  /**
+   * �🔐 VERIFICAR PROPRIEDADE DO PACIENTE
    * Por que este método?
    * - Garante que apenas o dono pode modificar
    * - Evita vazamento de dados entre usuários

@@ -55,6 +55,62 @@ export class UserService {
     }
   }
 
+  /**
+   * 🔥 CRIAR USUÁRIO FIREBASE
+   * ========================
+   * Cria usuário no MongoDB para integração com Firebase Auth
+   */
+  async createFirebaseUser(userData: {
+    name: string;
+    email: string;
+    password?: string;
+    role?: string;
+    firebaseUid: string;
+    emailVerified?: boolean;
+  }): Promise<User> {
+    try {
+      // 🔥 Verificar se email já existe
+      const existingUser = await UserModel.findOne({ 
+        email: userData.email.toLowerCase() 
+      });
+      
+      if (existingUser) {
+        throw new AppError('Email já cadastrado', 400);
+      }
+
+      // 🔥 Preparar senha (hash se fornecida, placeholder se não)
+      let hashedPassword = 'firebase_auth'; // Placeholder para Firebase-only users
+      if (userData.password) {
+        const saltRounds = 12;
+        hashedPassword = await bcrypt.hash(userData.password, saltRounds);
+        console.log(`🔍 Firebase User: Senha hashada para login local`);
+      }
+
+      // 🔥 Criar usuário Firebase básico SEM CPF, telefone, avatar
+      const user = new UserModel({
+        name: userData.name,
+        email: userData.email.toLowerCase(),
+        password: hashedPassword,
+        role: userData.role || UserRole.PATIENT,
+        isActive: true,
+        firebaseUid: userData.firebaseUid,
+        emailVerified: userData.emailVerified || false
+        // CPF, phone e avatar são undefined (não enviamos)
+      });
+
+      const savedUser = await user.save();
+      return savedUser.toJSON() as User;
+    } catch (error: any) {
+      if (error instanceof AppError) {
+        throw error;
+      }
+      if (error.code === 11000) {
+        throw new AppError('Email ou Firebase UID já cadastrado', 400);
+      }
+      throw new AppError('Erro ao criar usuário Firebase', 500);
+    }
+  }
+
   async findById(id: string): Promise<User | null> {
     try {
       if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -161,24 +217,7 @@ export class UserService {
     }
   }
 
-  async delete(id: string): Promise<void> {
-    try {
-      if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new AppError('ID de usuário inválido', 400);
-      }
 
-      const result = await UserModel.findByIdAndDelete(id).exec();
-      
-      if (!result) {
-        throw new AppError('Usuário não encontrado', 404);
-      }
-    } catch (error: any) {
-      if (error instanceof AppError) {
-        throw error;
-      }
-      throw new AppError('Erro ao deletar usuário', 500);
-    }
-  }
 
   async list(page: number = 1, limit: number = 20, role?: UserRole): Promise<{
     users: User[];
@@ -233,48 +272,6 @@ export class UserService {
     }
   }
 
-  async createFirebaseUser(userData: {
-    name: string;
-    email: string;
-    role?: string;
-    firebaseUid: string;
-    emailVerified?: boolean;
-  }): Promise<User> {
-    try {
-      // 🔥 Verificar se email já existe
-      const existingUser = await UserModel.findOne({ 
-        email: userData.email.toLowerCase() 
-      });
-      
-      if (existingUser) {
-        throw new AppError('Email já cadastrado', 400);
-      }
-
-      // 🔥 Criar usuário Firebase básico SEM CPF, telefone, avatar
-      const user = new UserModel({
-        name: userData.name,
-        email: userData.email.toLowerCase(),
-        password: 'firebase_auth', // Placeholder obrigatório
-        role: userData.role || UserRole.PATIENT,
-        isActive: true,
-        firebaseUid: userData.firebaseUid,
-        emailVerified: userData.emailVerified || false
-        // CPF, phone e avatar são undefined (não enviamos)
-      });
-
-      const savedUser = await user.save();
-      return savedUser.toJSON() as User;
-    } catch (error: any) {
-      if (error instanceof AppError) {
-        throw error;
-      }
-      if (error.code === 11000) {
-        throw new AppError('Email ou Firebase UID já cadastrado', 400);
-      }
-      throw new AppError('Erro ao criar usuário Firebase', 500);
-    }
-  }
-
   async linkFirebaseUid(userId: string, firebaseUid: string): Promise<User> {
     try {
       const user = await UserModel.findByIdAndUpdate(
@@ -296,6 +293,73 @@ export class UserService {
         throw new AppError('Firebase UID já vinculado a outra conta', 400);
       }
       throw new AppError('Erro ao vincular Firebase UID', 500);
+    }
+  }
+
+  // Método para deletar usuário (MongoDB + Firebase)
+  async delete(id: string): Promise<void> {
+    try {
+      // Buscar usuário para pegar Firebase UID
+      const user = await UserModel.findById(id);
+      if (!user) {
+        throw new AppError('Usuário não encontrado', 404);
+      }
+
+      // Se tem Firebase UID, deletar do Firebase também
+      if (user.firebaseUid) {
+        try {
+          const { adminAuth } = await import('../lib/firebase-admin');
+          if (adminAuth) {
+            await adminAuth.deleteUser(user.firebaseUid);
+            console.log(`🗑️ Usuário deletado do Firebase: ${user.email}`);
+          }
+        } catch (firebaseError: any) {
+          console.error(`❌ Erro ao deletar do Firebase: ${firebaseError.message}`);
+          // Continuar mesmo se falhar no Firebase
+        }
+      }
+
+      // Deletar do MongoDB
+      await UserModel.findByIdAndDelete(id);
+      console.log(`🗑️ Usuário deletado do MongoDB: ${user.email}`);
+      
+    } catch (error: any) {
+      throw new AppError('Erro ao deletar usuário', 500);
+    }
+  }
+
+  // Método para limpar TODOS os usuários (MongoDB + Firebase)
+  async deleteAll(): Promise<void> {
+    try {
+      // Buscar todos os usuários
+      const users = await UserModel.find({});
+      
+      // Deletar do Firebase primeiro
+      try {
+        const { adminAuth } = await import('../lib/firebase-admin');
+        if (adminAuth) {
+          const firebaseUsers = await adminAuth.listUsers();
+          for (const fbUser of firebaseUsers.users) {
+            try {
+              await adminAuth.deleteUser(fbUser.uid);
+              console.log(`🗑️ Firebase: ${fbUser.email || fbUser.uid} deletado`);
+            } catch (error: any) {
+              console.error(`❌ Erro ao deletar Firebase user ${fbUser.uid}:`, error.message);
+            }
+          }
+        } else {
+          console.log('⚠️ Firebase Admin não configurado - pulando limpeza Firebase');
+        }
+      } catch (firebaseError: any) {
+        console.error('❌ Erro na limpeza do Firebase:', firebaseError.message);
+      }
+
+      // Deletar todos do MongoDB
+      const result = await UserModel.deleteMany({});
+      console.log(`🗑️ MongoDB: ${result.deletedCount} usuários deletados`);
+      
+    } catch (error: any) {
+      throw new AppError('Erro ao limpar usuários', 500);
     }
   }
 

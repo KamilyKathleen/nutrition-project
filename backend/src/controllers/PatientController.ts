@@ -141,4 +141,152 @@ export class PatientController {
       message: 'Paciente removido com sucesso'
     });
   });
+
+  /**
+   * 📤 ENVIAR CONVITE PARA PACIENTE
+   */
+  sendInvite = asyncHandler(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    const { patientEmail, message } = req.body;
+    const nutritionistId = req.user!.userId;
+
+    // Buscar se já existe um usuário com esse email
+    const { UserService } = await import('../services/UserService');
+    const userService = new UserService();
+    
+    let patientName = '';
+    try {
+      const existingUser = await userService.findByEmail(patientEmail);
+      if (existingUser) {
+        patientName = existingUser.name;
+        console.log(`📧 Usuário encontrado: ${existingUser.name} (${patientEmail})`);
+      } else {
+        console.log(`📧 Usuário não encontrado para: ${patientEmail}`);
+      }
+    } catch (error) {
+      // Se não encontrar usuário, continua sem nome
+      console.log(`📧 Email ${patientEmail} não possui cadastro no sistema`);
+    }
+
+    // Importar dinamicamente para evitar dependência circular
+    const { PatientInviteService } = await import('../services/PatientInviteService');
+    const inviteService = new PatientInviteService();
+
+    const invite = await inviteService.createInvite({
+      patientEmail,
+      patientName: patientName || undefined, // Só inclui se encontrou
+      message
+    }, nutritionistId);
+
+    res.status(201).json({
+      success: true,
+      message: patientName 
+        ? `Convite enviado para ${patientName} (${patientEmail})` 
+        : `Convite enviado para ${patientEmail}`,
+      data: invite
+    });
+  });
+
+  /**
+   * 📋 LISTAR CONVITES ENVIADOS
+   */
+  listInvites = asyncHandler(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    const nutritionistId = req.user!.userId;
+
+    // Importar dinamicamente para evitar dependência circular
+    const { PatientInviteService } = await import('../services/PatientInviteService');
+    const inviteService = new PatientInviteService();
+
+    const invites = await inviteService.getInvitesByNutritionist(nutritionistId);
+
+    res.json({
+      success: true,
+      data: invites
+    });
+  });
+
+  /**
+   * 🗑️ CANCELAR CONVITE
+   */
+  cancelInvite = asyncHandler(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    const { inviteId } = req.params;
+    const nutritionistId = req.user!.userId;
+
+    // Importar dinamicamente para evitar dependência circular
+    const { PatientInviteService } = await import('../services/PatientInviteService');
+    const inviteService = new PatientInviteService();
+
+    await inviteService.cancelInvite(inviteId, nutritionistId);
+
+    res.json({
+      success: true,
+      message: 'Convite cancelado com sucesso'
+    });
+  });
+
+  /**
+   * 🔗 VERIFICAR SE PACIENTE TEM RELACIONAMENTO (PARA FRONTEND)
+   */
+  getMyRelationship = asyncHandler(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    const userId = req.user!.userId;
+    const userEmail = req.user!.email;
+
+    // Buscar se o usuário tem relacionamento como paciente
+    const patient = await this.patientService.findByEmail(userEmail);
+
+    if (!patient) {
+      res.status(404).json({
+        success: false,
+        message: 'Nenhum relacionamento encontrado'
+      });
+      return;
+    }
+
+    res.json({
+      success: true,
+      message: 'Relacionamento encontrado',
+      data: patient
+    });
+  });
+
+  /**
+   * 👨‍⚕️ BUSCAR DADOS DO NUTRICIONISTA VINCULADO
+   */
+  getMyNutritionist = asyncHandler(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    const userEmail = req.user!.email;
+
+    // Buscar o paciente pelo email
+    const patient = await this.patientService.findByEmail(userEmail);
+
+    if (!patient) {
+      res.status(404).json({
+        success: false,
+        message: 'Nenhum relacionamento encontrado'
+      });
+      return;
+    }
+
+    // Buscar dados do nutricionista
+    const { UserService } = await import('../services/UserService');
+    const userService = new UserService();
+    const nutritionist = await userService.findById(patient.nutritionistId);
+
+    if (!nutritionist) {
+      res.status(404).json({
+        success: false,
+        message: 'Nutricionista não encontrado'
+      });
+      return;
+    }
+
+    res.json({
+      success: true,
+      message: 'Nutricionista encontrado',
+      data: {
+        id: nutritionist.id,
+        name: nutritionist.name,
+        email: nutritionist.email,
+        crn: nutritionist.crn
+      }
+    });
+  });
 }

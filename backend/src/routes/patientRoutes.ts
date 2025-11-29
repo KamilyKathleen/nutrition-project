@@ -83,7 +83,29 @@ router.get(
 );
 
 /**
- * 🔍 BUSCAR PACIENTE POR ID
+ * � VERIFICAR RELACIONAMENTO DO PACIENTE
+ * GET /api/patients/me
+ * Headers: Authorization: Bearer <token>
+ */
+router.get(
+  '/me',
+  authenticate,
+  patientController.getMyRelationship.bind(patientController)
+);
+
+/**
+ * 👨‍⚕️ BUSCAR NUTRICIONISTA VINCULADO
+ * GET /api/patients/nutritionist
+ * Headers: Authorization: Bearer <token>
+ */
+router.get(
+  '/nutritionist',
+  authenticate,
+  patientController.getMyNutritionist.bind(patientController)
+);
+
+/**
+ * �🔍 BUSCAR PACIENTE POR ID
  * GET /api/patients/:id
  * Headers: Authorization: Bearer <token>
  */
@@ -110,7 +132,7 @@ router.put(
 );
 
 /**
- * �️ DELETAR PACIENTE
+ * 🗑️ DELETAR PACIENTE
  * DELETE /api/patients/:id
  * Headers: Authorization: Bearer <token>
  */
@@ -119,6 +141,48 @@ router.delete(
   authenticate,
   auditPatientAccess('PATIENT_DELETE'),
   patientController.delete.bind(patientController)
+);
+
+// 📧 SISTEMA DE CONVITES DE PACIENTES
+const inviteSchema = Joi.object({
+  patientEmail: Joi.string().email().required(),
+  patientName: Joi.string().optional(),
+  message: Joi.string().optional()
+});
+
+/**
+ * 📤 ENVIAR CONVITE PARA PACIENTE
+ * POST /api/patients/invite
+ * Headers: Authorization: Bearer <token>
+ * Body: { patientEmail: string, patientName?: string, message?: string }
+ */
+router.post(
+  '/invite',
+  authenticate,
+  validate(inviteSchema),
+  patientController.sendInvite.bind(patientController)
+);
+
+/**
+ * 📋 LISTAR CONVITES ENVIADOS
+ * GET /api/patients/invites
+ * Headers: Authorization: Bearer <token>
+ */
+router.get(
+  '/invites',
+  authenticate,
+  patientController.listInvites.bind(patientController)
+);
+
+/**
+ * 🗑️ CANCELAR/EXCLUIR CONVITE
+ * DELETE /api/patients/invite/:inviteId
+ * Headers: Authorization: Bearer <token>
+ */
+router.delete(
+  '/invite/:inviteId',
+  authenticate,
+  patientController.cancelInvite.bind(patientController)
 );
 
 export { router as patientRoutes };

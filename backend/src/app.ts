@@ -8,8 +8,10 @@ import { errorHandler } from './middlewares/errorHandler';
 import { rateLimiter } from './middlewares/rateLimiter';
 import { authRoutes } from './routes/authRoutes';
 import firebaseAuthRoutes from './routes/firebaseAuth';
+import { hybridAuthRoutes } from './routes/hybridAuthRoutes';
 import { userRoutes } from './routes/userRoutes';
 import { patientRoutes } from './routes/patientRoutes';
+import { patientDataRoutes } from './routes/patientDataRoutes';
 import { nutritionalAssessmentRoutes } from './routes/nutritionalAssessmentRoutes';
 import { dietPlanRoutes } from './routes/dietPlanRoutes';
 import { consultationRoutes } from './routes/consultationRoutes';
@@ -65,8 +67,10 @@ app.get('/health', (req, res) => {
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/auth/firebase', firebaseAuthRoutes); // 🔥 Firebase Auth
+app.use('/api/auth', hybridAuthRoutes); // 🔥🎫 Hybrid Auth (Firebase + JWT)
 app.use('/api/users', userRoutes);
 app.use('/api/patients', patientRoutes);
+app.use('/api/patient-data', patientDataRoutes);
 app.use('/api/nutritional-assessments', nutritionalAssessmentRoutes);
 app.use('/api/diet-plans', dietPlanRoutes);
 app.use('/api/consultations', consultationRoutes);
@@ -76,6 +80,16 @@ app.use('/api/audit', auditRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/metrics', metricRoutes);
 app.use('/api/exports', exportRoutes);
+
+// Rotas de convites
+import { inviteRoutes } from './routes/inviteRoutes';
+app.use('/api/invites', inviteRoutes);
+
+// Rotas de debug (apenas desenvolvimento)
+import { debugRoutes } from './routes/debugRoutes';
+if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
+  app.use('/api', debugRoutes);
+}
 
 // 404 handler
 app.use('*', (req, res) => {
