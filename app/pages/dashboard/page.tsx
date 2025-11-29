@@ -4,7 +4,7 @@ import { useAuth } from '@/app/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Breadcrumb from "@/app/components/breadcrumb";
-import Banner from "../../img/banner.jpeg";
+import Banner from "../../img/banner-dashboard.jpg";
 import NutritionistDashboard from "./NutritionistDashboard";
 import PatientDashboard from "./PatientDashboard";
 

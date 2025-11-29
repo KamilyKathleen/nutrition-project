@@ -1,10 +1,8 @@
 'use client'
 
 import Image from "next/image";
-import LoremIpsum from "@/app/components/loremIpsum";
 import Breadcrumb from "@/app/components/breadcrumb";
-import Placeholder from "@/app/img/placeholder.webp";
-import Banner from "@/app/img/banner.jpeg";
+import Banner from "@/app/img/banner-faq.webp";
 import { Accordion, AccordionItem } from "@heroui/accordion";
 import { FaAngleDown, FaAngleUp } from "react-icons/fa";
 import Mesa from "@/app/img/mesa.webp"
