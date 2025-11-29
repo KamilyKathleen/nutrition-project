@@ -40,19 +40,16 @@ export enum BlogStatus {
 export interface IBlog extends Document {
   title: string;
   slug: string;
-  excerpt: string;
   content: string;
   featuredImage?: string;
   category: BlogCategory;
-  tags: string[];
   status: BlogStatus;
   author: mongoose.Types.ObjectId | IUser;
   views: number;
   publishedAt?: Date;
   seoTitle?: string;
   seoDescription?: string;
-  readingTime: number; // em minutos
-  isHighlighted: boolean;
+  readingTime?: number; // em minutos
   
   createdAt: Date;
   updatedAt: Date;
@@ -86,25 +83,16 @@ const blogSchema = new Schema<IBlog>({
   
   slug: {
     type: String,
-    required: [true, 'Slug é obrigatório'],
     unique: true,
     lowercase: true,
     trim: true,
     match: [/^[a-z0-9-]+$/, 'Slug deve conter apenas letras minúsculas, números e hífens']
   },
   
-  excerpt: {
-    type: String,
-    required: [true, 'Resumo é obrigatório'],
-    trim: true,
-    minLength: [50, 'Resumo deve ter pelo menos 50 caracteres'],
-    maxLength: [300, 'Resumo não pode exceder 300 caracteres']
-  },
-  
   content: {
     type: String,
     required: [true, 'Conteúdo é obrigatório'],
-    minLength: [200, 'Conteúdo deve ter pelo menos 200 caracteres'],
+    minLength: [50, 'Conteúdo deve ter pelo menos 50 caracteres'],
     maxLength: [50000, 'Conteúdo não pode exceder 50.000 caracteres']
   },
   
@@ -119,13 +107,6 @@ const blogSchema = new Schema<IBlog>({
     enum: Object.values(BlogCategory),
     required: [true, 'Categoria é obrigatória']
   },
-  
-  tags: [{
-    type: String,
-    trim: true,
-    lowercase: true,
-    maxLength: [30, 'Tag não pode exceder 30 caracteres']
-  }],
   
   status: {
     type: String,
@@ -171,7 +152,6 @@ const blogSchema = new Schema<IBlog>({
   
   readingTime: {
     type: Number,
-    required: true,
     min: [1, 'Tempo de leitura deve ser pelo menos 1 minuto'],
     max: [60, 'Tempo de leitura não pode exceder 60 minutos']
   }
@@ -191,22 +171,15 @@ const blogSchema = new Schema<IBlog>({
 // 🎯 ÍNDICES PARA PERFORMANCE
 // ================================
 
-// blogSchema.index({ slug: 1 }, { unique: true }); // Já tem unique: true no schema
 blogSchema.index({ status: 1, publishedAt: -1 });
 blogSchema.index({ category: 1, status: 1 });
 blogSchema.index({ author: 1, status: 1 });
-blogSchema.index({ tags: 1, status: 1 });
-blogSchema.index({ isHighlighted: 1, publishedAt: -1 });
 blogSchema.index({ 
   title: 'text', 
-  excerpt: 'text', 
-  content: 'text', 
-  tags: 'text' 
+  content: 'text'
 }, {
   weights: {
     title: 10,
-    excerpt: 5,
-    tags: 3,
     content: 1
   }
 });
@@ -219,13 +192,22 @@ blogSchema.index({
  * 📝 Gerar slug automaticamente
  */
 blogSchema.pre('save', function(next) {
-  if (this.isModified('title') && !this.isModified('slug')) {
-    this.slug = this.title
+  if (!this.slug || this.isModified('title')) {
+    let baseSlug = this.title
       .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Remove acentos
       .replace(/[^\w\s-]/g, '')
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-')
       .trim();
+    
+    // Se for um novo documento, adiciona timestamp para garantir unicidade
+    if (this.isNew) {
+      baseSlug = `${baseSlug}-${Date.now()}`;
+    }
+    
+    this.slug = baseSlug;
   }
   next();
 });
@@ -261,7 +243,7 @@ blogSchema.pre('save', function(next) {
       this.seoTitle = this.title.substring(0, 60);
     }
     if (!this.seoDescription) {
-      this.seoDescription = this.excerpt.substring(0, 160);
+      this.seoDescription = this.content.substring(0, 160);
     }
   }
   next();

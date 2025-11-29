@@ -7,7 +7,6 @@ import mongoose, { Schema, Document } from 'mongoose';
  */
 
 export interface IInternalNotification extends Document {
-  _id: string;
   userId: string; // Firebase UID
   type: 'invite' | 'consultation' | 'diet_plan' | 'assessment' | 'welcome' | 'reminder';
   title: string;

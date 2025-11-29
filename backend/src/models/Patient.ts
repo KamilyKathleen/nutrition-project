@@ -1,8 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { Patient, Gender, Address } from '../types';
 
-export interface IPatient extends Omit<Patient, 'id' | 'nutritionistId'>, Document {
-  _id: string;
+export interface IPatient extends Omit<Patient, 'id' | 'nutritionistId' | '_id'>, Document {
   nutritionistId: mongoose.Types.ObjectId;
 }
 

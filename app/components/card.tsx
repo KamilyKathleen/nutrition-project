@@ -15,15 +15,26 @@ interface CardProps {
 }
 
 export default function Card({ image, description, title, subtitle, page, button }: CardProps) {
+    const isExternalImage = typeof image === 'string' && (image.startsWith('http://') || image.startsWith('https://'));
 
     return (
         <div className="rounded-lg shadow-lg max-w-[350px] mx-auto">
             {image && (
-                <Image
-                    src={image}
-                    alt="Card Image"
-                    className="w-full h-[230px] object-cover mb-2 rounded-t-lg"
-                />
+                isExternalImage ? (
+                    // Para imagens externas, usar tag img normal
+                    <img
+                        src={image as string}
+                        alt="Card Image"
+                        className="w-full h-[230px] object-cover mb-2 rounded-t-lg"
+                    />
+                ) : (
+                    // Para imagens locais/importadas, usar Next Image
+                    <Image
+                        src={image}
+                        alt="Card Image"
+                        className="w-full h-[230px] object-cover mb-2 rounded-t-lg"
+                    />
+                )
             )}
             <div className='w-[90%] mx-auto p-4'>
                 <h3 className="text-xl ">{title}</h3>

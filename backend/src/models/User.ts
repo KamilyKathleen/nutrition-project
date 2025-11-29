@@ -1,8 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { User, UserRole } from '../types';
 
-export interface IUser extends Omit<User, 'id'>, Document {
-  _id: string;
+export interface IUser extends Omit<User, 'id' | '_id'>, Document {
   password: string;
 }
 

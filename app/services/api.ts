@@ -26,11 +26,27 @@ class ApiClient {
 
         // Adicionar token de autenticação se existir
         const token = localStorage.getItem('authToken');
+        
+        // 🔍 DEBUG: Log detalhado de autenticação
+        console.log('🔍 [API Debug]', {
+            endpoint,
+            method: options.method || 'GET',
+            hasToken: !!token,
+            tokenPreview: token ? `${token.substring(0, 20)}...` : 'none',
+            localStorage: {
+                authToken: !!localStorage.getItem('authToken'),
+                user: !!localStorage.getItem('nutriplan_user')
+            }
+        });
+        
         if (token) {
             config.headers = {
                 ...config.headers,
                 'Authorization': `Bearer ${token}`,
             };
+            console.log('✅ Token adicionado ao header Authorization');
+        } else {
+            console.warn('⚠️ Nenhum token encontrado no localStorage!');
         }
 
         try {
@@ -38,7 +54,13 @@ class ApiClient {
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+                console.error('❌ API Error Response:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    errorData,
+                    url
+                });
+                throw new Error(errorData.message || errorData.error || `HTTP ${response.status}: ${response.statusText}`);
             }
 
             // Retornar resposta vazia para status 204 (No Content)
@@ -59,6 +81,11 @@ class ApiClient {
     }
 
     async post<T>(endpoint: string, data?: unknown): Promise<T> {
+        console.log('📤 [API.post] Enviando POST:', {
+            endpoint,
+            data,
+            dataStringified: data ? JSON.stringify(data).substring(0, 200) + '...' : 'undefined'
+        });
         return this.request<T>(endpoint, {
             method: 'POST',
             body: data ? JSON.stringify(data) : undefined,

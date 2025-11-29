@@ -15,8 +15,6 @@ interface BlogFilters {
   category?: BlogCategory;
   status?: BlogStatus;
   author?: string;
-  tags?: string[];
-  isHighlighted?: boolean;
   startDate?: Date;
   endDate?: Date;
   searchText?: string;
@@ -33,21 +31,17 @@ interface PaginationOptions {
 }
 
 /**
- * 🏷️ DADOS PARA CRIAR POST
+ * 📝 TIPOS PARA CRIAÇÃO DE POST
  */
 interface CreateBlogData {
   title: string;
   slug?: string;
-  excerpt: string;
   content: string;
   featuredImage?: string;
   category: BlogCategory;
-  tags?: string[];
   status?: BlogStatus;
   seoTitle?: string;
   seoDescription?: string;
-  isHighlighted?: boolean;
-  relatedPosts?: string[];
 }
 
 /**
@@ -80,24 +74,14 @@ class BlogService {
    */
   async createPost(postData: CreateBlogData, authorId: string): Promise<IBlog> {
     try {
-      // Verificar se slug já existe
-      if (postData.slug) {
-        const existingPost = await Blog.findOne({ slug: postData.slug });
-        if (existingPost) {
-          throw new AppError('Slug já está em uso', 400);
-        }
-      }
-
-      // Processar tags
-      const processedTags = postData.tags
-        ? postData.tags.map(tag => tag.toLowerCase().trim()).filter(Boolean)
-        : [];
-
-      // Criar post
+      console.log('📝 [BlogService.createPost] Iniciando criação de post...');
+      console.log('📝 [BlogService.createPost] postData:', JSON.stringify(postData, null, 2));
+      console.log('📝 [BlogService.createPost] authorId:', authorId);
+      
+      // Criar post (slug será gerado automaticamente pelo middleware)
       const post = new Blog({
         ...postData,
         author: authorId,
-        tags: processedTags,
         auditInfo: {
           createdBy: authorId,
           createdAt: new Date(),
@@ -107,7 +91,9 @@ class BlogService {
         }
       });
 
+      console.log('📝 [BlogService.createPost] Post object criado, salvando...');
       await post.save();
+      console.log('✅ [BlogService.createPost] Post salvo com sucesso! ID:', post._id);
 
       // Log de auditoria (temporariamente comentado)
       // // await logAudit(
@@ -118,11 +104,16 @@ class BlogService {
       //   { title: post.title, category: post.category, status: post.status }
       // );
 
-      return await Blog.findById(post._id)
-        .populate('author', 'name email')
-        .populate('relatedPosts', 'title slug excerpt featuredImage category') as IBlog;
+      console.log('📝 [BlogService.createPost] Buscando post populado...');
+      const populatedPost = await Blog.findById(post._id)
+        .populate('author', 'name email') as IBlog;
+      
+      console.log('✅ [BlogService.createPost] Post populado retornado!');
+      return populatedPost;
 
     } catch (error: any) {
+      console.error('❌ [BlogService.createPost] Erro:', error.message);
+      console.error('❌ [BlogService.createPost] Stack:', error.stack);
       if (error.code === 11000) {
         throw new AppError('Slug já está em uso', 400);
       }
@@ -151,11 +142,6 @@ class BlogService {
       if (filters.category) query.category = filters.category;
       if (filters.status) query.status = filters.status;
       if (filters.author) query.author = filters.author;
-      if (filters.isHighlighted !== undefined) query.isHighlighted = filters.isHighlighted;
-
-      if (filters.tags && filters.tags.length > 0) {
-        query.tags = { $in: filters.tags };
-      }
 
       if (filters.startDate || filters.endDate) {
         query.publishedAt = {};
@@ -173,7 +159,6 @@ class BlogService {
       // Executar query
       let postsQuery = Blog.find(query)
         .populate('author', 'name email profileImage')
-        .populate('relatedPosts', 'title slug excerpt featuredImage category')
         .skip(skip)
         .limit(limit);
 
@@ -216,8 +201,7 @@ class BlogService {
       }
 
       const post = await Blog.findById(postId)
-        .populate('author', 'name email profileImage bio')
-        .populate('relatedPosts', 'title slug excerpt featuredImage category publishedAt');
+        .populate('author', 'name email profileImage bio');
 
       if (!post) {
         return null;
@@ -241,8 +225,7 @@ class BlogService {
   async getPostBySlug(slug: string, increaseViews = false): Promise<IBlog | null> {
     try {
       const post = await Blog.findOne({ slug })
-        .populate('author', 'name email profileImage bio')
-        .populate('relatedPosts', 'title slug excerpt featuredImage category publishedAt');
+        .populate('author', 'name email profileImage bio');
 
       if (!post) {
         return null;
@@ -287,21 +270,13 @@ class BlogService {
         }
       }
 
-      // Processar tags se fornecidas
-      if (updateData.tags) {
-        updateData.tags = updateData.tags
-          .map(tag => tag.toLowerCase().trim())
-          .filter(Boolean);
-      }
-
       // Atualizar auditoria
       const updatedPost = await Blog.findByIdAndUpdate(
         postId,
         updateData,
         { new: true, runValidators: true }
       )
-      .populate('author', 'name email profileImage')
-      .populate('relatedPosts', 'title slug excerpt featuredImage category');
+      .populate('author', 'name email profileImage');
 
       // Log de auditoria
       // await logAudit(
@@ -401,14 +376,11 @@ class BlogService {
         return [];
       }
 
-      // Buscar posts com tags ou categoria similar
+      // Buscar posts com categoria similar
       const relatedPosts = await Blog.find({
         _id: { $ne: postId },
         status: BlogStatus.PUBLISHED,
-        $or: [
-          { category: post.category },
-          { tags: { $in: post.tags } }
-        ]
+        category: post.category
       })
       .populate('author', 'name email profileImage')
       .sort({ publishedAt: -1 })
@@ -552,38 +524,6 @@ class BlogService {
 
     } catch (error) {
       throw new AppError('Erro ao gerar estatísticas', 500);
-    }
-  }
-
-  /**
-   * 🏷️ Buscar todas as tags
-   */
-  async getAllTags(): Promise<{ tag: string; count: number }[]> {
-    try {
-      const tags = await Blog.aggregate([
-        { $match: { status: BlogStatus.PUBLISHED } },
-        { $unwind: '$tags' },
-        {
-          $group: {
-            _id: '$tags',
-            count: { $sum: 1 }
-          }
-        },
-        {
-          $project: {
-            _id: 0,
-            tag: '$_id',
-            count: 1
-          }
-        },
-        { $sort: { count: -1 } },
-        { $limit: 50 }
-      ]);
-
-      return tags;
-
-    } catch (error) {
-      throw new AppError('Erro ao buscar tags', 500);
     }
   }
 }
