@@ -1,4 +1,4 @@
-import FirebaseLoginIntegrated from '@/components/FirebaseLoginIntegrated';
+import FirebaseLoginIntegrated from '../../components/FirebaseLoginIntegrated';
 
 /**
  * 🔥 PÁGINA DE TESTE FIREBASE
