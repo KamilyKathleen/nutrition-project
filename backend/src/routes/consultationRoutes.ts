@@ -163,7 +163,7 @@ router.post('/',
   authorize(UserRole.NUTRITIONIST),
   createConsultationValidation,
   validateRequest,
-  auditSensitiveAccess('consultation_create', 'PATIENT', (req) => req.body.patientId),
+  auditSensitiveAccess('consultation_create', 'CONSULTATION', (req) => req.body.patientId),
   ConsultationController.createConsultation
 );
 

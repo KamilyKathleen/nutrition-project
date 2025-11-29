@@ -79,23 +79,10 @@ const consultationSchema = new Schema<IConsultation>({
   scheduledDate: {
     type: Date,
     required: [true, 'Data agendada é obrigatória'],
-    index: true,
-    validate: {
-      validator: function(date: Date) {
-        return date >= new Date();
-      },
-      message: 'Data agendada não pode ser no passado'
-    }
+    index: true
   },
   actualDate: {
-    type: Date,
-    validate: {
-      validator: function(date: Date) {
-        if (!date) return true;
-        return date <= new Date();
-      },
-      message: 'Data real não pode ser no futuro'
-    }
+    type: Date
   },
   duration: {
     type: Number,
@@ -175,7 +162,7 @@ const consultationSchema = new Schema<IConsultation>({
   },
   observations: {
     type: String,
-    required: [true, 'Observações são obrigatórias'],
+    required: false,
     trim: true,
     maxlength: [2000, 'Observações muito longas'],
     set: encrypt,
@@ -183,7 +170,7 @@ const consultationSchema = new Schema<IConsultation>({
   },
   recommendations: {
     type: String,
-    required: [true, 'Recomendações são obrigatórias'],
+    required: false,
     trim: true,
     maxlength: [2000, 'Recomendações muito longas'],
     set: encrypt,
@@ -199,14 +186,7 @@ const consultationSchema = new Schema<IConsultation>({
   
   // Próximos passos
   nextAppointment: {
-    type: Date,
-    validate: {
-      validator: function(date: Date) {
-        if (!date) return true;
-        return date > new Date();
-      },
-      message: 'Próxima consulta deve ser no futuro'
-    }
+    type: Date
   },
   prescriptions: [{
     type: {
@@ -272,37 +252,38 @@ consultationSchema.pre('save', async function(next) {
   const consultationTime = this.scheduledDate;
   const endTime = new Date(consultationTime.getTime() + (this.duration * 60000));
 
-  // Verificar conflitos para o nutricionista
-  const conflicts = await mongoose.model('Consultation').find({
+  // Buscar todas as consultas do nutricionista no mesmo dia
+  const startOfDay = new Date(consultationTime);
+  startOfDay.setHours(0, 0, 0, 0);
+  const endOfDay = new Date(consultationTime);
+  endOfDay.setHours(23, 59, 59, 999);
+
+  const existingConsultations = await mongoose.model('Consultation').find({
     _id: { $ne: this._id },
     nutritionistId: this.nutritionistId,
     status: { $in: ['scheduled', 'rescheduled'] },
-    $or: [
-      {
-        scheduledDate: {
-          $gte: consultationTime,
-          $lt: endTime
-        }
-      },
-      {
-        $expr: {
-          $and: [
-            { $lte: '$scheduledDate', consultationTime },
-            { 
-              $gt: {
-                $add: ['$scheduledDate', { $multiply: ['$duration', 60000] }]
-              },
-              consultationTime
-            }
-          ]
-        }
-      }
-    ]
-  });
+    scheduledDate: {
+      $gte: startOfDay,
+      $lte: endOfDay
+    }
+  }).lean();
 
-  if (conflicts.length > 0) {
-    const error = new Error('Conflito de horário: nutricionista já tem consulta agendada neste período');
-    return next(error);
+  // Verificar conflitos manualmente
+  for (const existing of existingConsultations) {
+    const existingStart = new Date(existing.scheduledDate);
+    const existingEnd = new Date(existingStart.getTime() + (existing.duration * 60000));
+
+    // Verifica se há sobreposição de horários
+    const hasOverlap = (
+      (consultationTime >= existingStart && consultationTime < existingEnd) ||
+      (endTime > existingStart && endTime <= existingEnd) ||
+      (consultationTime <= existingStart && endTime >= existingEnd)
+    );
+
+    if (hasOverlap) {
+      const error = new Error('Conflito de horário: nutricionista já tem consulta agendada neste período');
+      return next(error);
+    }
   }
 
   next();

@@ -66,7 +66,7 @@ const createAssessmentSchema = Joi.object({
         intensity: Joi.string().valid('low', 'moderate', 'high').required(),
         frequency: Joi.number().min(1).max(7).required()
       })
-    ).required(),
+    ).default([]),
     sedentaryTime: Joi.number().min(0).max(24).required()
   }).optional(),
   observations: Joi.string().max(2000).optional()

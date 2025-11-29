@@ -25,15 +25,19 @@ export interface Patient {
   id: string;
   name: string;
   email?: string;
+  phone?: string;
   birthDate: Date;
   gender: Gender;
-  address?: Address;
   medicalHistory?: string;
   allergies?: string[];
   medications?: string[];
   nutritionalGoals?: string[];
   notes?: string;
   nutritionistId: string; // ID do nutricionista responsável
+  userId?: string; // ID do usuário vinculado (quando paciente tem conta)
+  status?: 'linked' | 'not_linked' | 'invite_pending'; // Status de vinculação
+  inviteId?: string; // ID do convite pendente (se houver)
+  inviteDate?: string; // Data de envio do convite (se houver)
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -43,21 +47,6 @@ export enum Gender {
   MALE = 'male',
   FEMALE = 'female',
   OTHER = 'other'
-}
-
-export interface EmergencyContact {
-  name: string;
-  relationship: string;
-  phone: string;
-}
-
-export interface Address {
-  street: string;
-  number: string;
-  neighborhood: string;
-  city: string;
-  state: string;
-  zipCode: string;
 }
 
 export interface NutritionalAssessment {
@@ -170,9 +159,11 @@ export interface PlannedMeal {
 export interface Consultation {
   id: string;
   patientId: string;
+  patientName?: string;
   studentId: string;
   date: Date;
   duration: number; // minutos
+  type?: string;
   weight?: number;
   bloodPressure?: BloodPressure;
   observations: string;
@@ -289,10 +280,10 @@ export interface LoginRequest {
 export interface CreatePatientRequest {
   name: string;
   email?: string;
+  phone?: string;
   birthDate: string;
   gender: Gender;
   occupation?: string;
-  emergencyContact?: EmergencyContact;
   medicalHistory?: string;
   allergies?: string[];
   medications?: string[];

@@ -20,7 +20,15 @@ export class PatientController {
     const createData = req.body;
     const nutritionistId = req.user!.userId;
 
-    const patient = await this.patientService.create(createData, nutritionistId);
+    // Normalizar dados do frontend
+    const normalizedData = {
+      ...createData,
+      birthDate: createData.dateOfBirth || createData.birthDate,
+      gender: createData.sex || createData.gender,
+      notes: createData.goal || createData.notes
+    };
+
+    const patient = await this.patientService.create(normalizedData, nutritionistId);
 
     res.status(201).json({
       success: true,
@@ -118,7 +126,34 @@ export class PatientController {
   });
 
   /**
-   * 🗑️ DELETAR PACIENTE
+   * � VINCULAR PACIENTE A USUÁRIO
+   */
+  linkToUser = asyncHandler(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    const { id } = req.params;
+    const { email } = req.body;
+    const nutritionistId = req.user!.userId;
+
+    // Verificar se o paciente existe e pertence ao nutricionista
+    const existingPatient = await this.patientService.findById(id);
+    if (!existingPatient || existingPatient.nutritionistId !== nutritionistId) {
+      res.status(404).json({
+        success: false,
+        message: 'Paciente não encontrado'
+      });
+      return;
+    }
+
+    // Chamar serviço para processar o convite de vinculação (não revelar existência do usuário)
+    await this.patientService.linkToUserByEmail(id, email);
+
+    res.json({
+      success: true,
+      message: 'Se um usuário com esse email existir, ele recebeu o convite.'
+    });
+  });
+
+  /**
+   * �🗑️ DELETAR PACIENTE
    */
   delete = asyncHandler(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     const { id } = req.params;

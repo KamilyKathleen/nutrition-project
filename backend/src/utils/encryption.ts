@@ -80,13 +80,9 @@ export const anonymizePatient = (patient: any) => ({
   id: patient.id,
   ageRange: calculateAgeRange(patient.birthDate),
   gender: patient.gender,
-  region: patient.address?.state || 'Não informado',
   hasAllergies: patient.allergies?.length > 0,
   allergiesCount: patient.allergies?.length || 0,
-  medicationsCount: patient.medications?.length || 0,
-  hasEmergencyContact: !!patient.emergencyContact,
-  // Dados removidos para anonimização
-  // name, address completo, dados médicos, etc.
+  medicationsCount: patient.medications?.length || 0
 });
 
 /**

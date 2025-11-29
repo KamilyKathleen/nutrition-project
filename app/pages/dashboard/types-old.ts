@@ -2,7 +2,7 @@
 import { Patient as ServicePatient } from '@/app/services';
 
 // Status do relacionamento paciente-nutricionista
-export type PatientStatus = 'linked' | 'invite_pending' | 'not_linked' | 'invite_expired';
+export type PatientStatus = 'vinculado' | 'convite_pendente' | 'nao_vinculado' | 'convite_expirado';
 
 // Interface para pacientes no dashboard do nutricionista
 export interface DashboardPatient {

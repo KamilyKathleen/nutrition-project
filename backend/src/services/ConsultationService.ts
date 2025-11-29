@@ -23,43 +23,54 @@ export class ConsultationService {
     type?: 'initial' | 'follow_up' | 'emergency' | 'online' | 'in_person';
   }): Promise<Consultation> {
     try {
+      console.log('📋 Dados recebidos para criar consulta:', {
+        patientId: data.patientId,
+        nutritionistId: data.nutritionistId,
+        scheduledDate: data.scheduledDate,
+        duration: data.duration,
+        type: data.type
+      });
+
       // Verificar se o paciente existe e pertence ao nutricionista
       const patient = await PatientModel.findOne({
         _id: new mongoose.Types.ObjectId(data.patientId),
         nutritionistId: new mongoose.Types.ObjectId(data.nutritionistId)
       });
 
+      console.log('🔍 Paciente encontrado:', patient ? 'Sim' : 'Não');
+
       if (!patient) {
         throw new AppError('Paciente não encontrado ou não pertence a este nutricionista', 404);
       }
 
       // Validar data futura
-      if (data.scheduledDate <= new Date()) {
+      const scheduledDate = new Date(data.scheduledDate);
+      console.log('📅 Data agendada:', scheduledDate);
+      console.log('📅 Data atual:', new Date());
+      
+      if (scheduledDate <= new Date()) {
         throw new AppError('Data da consulta deve ser no futuro', 400);
       }
 
-      // Verificar horário comercial (exemplo: 8h às 18h)
-      const hour = data.scheduledDate.getHours();
-      if (hour < 8 || hour >= 18) {
-        throw new AppError('Consultas devem ser agendadas entre 8h e 18h', 400);
-      }
-
+      console.log('🏗️ Criando consulta...');
       const consultation = new ConsultationModel({
-        patientId: data.patientId,
-        nutritionistId: data.nutritionistId,
-        scheduledDate: data.scheduledDate,
+        patientId: new mongoose.Types.ObjectId(data.patientId),
+        nutritionistId: new mongoose.Types.ObjectId(data.nutritionistId),
+        scheduledDate: scheduledDate,
         duration: data.duration || 60,
         type: data.type || 'follow_up',
-        status: 'scheduled',
-        observations: '',
-        recommendations: ''
+        status: 'scheduled'
       });
 
+      console.log('💾 Salvando consulta...');
       const savedConsultation = await consultation.save();
+      console.log('✅ Consulta salva:', savedConsultation._id);
+      
       await savedConsultation.populate('patientId', 'name email');
 
       return this.mapToInterface(savedConsultation);
     } catch (error: any) {
+      console.error('❌ Erro ao criar consulta:', error);
       if (error instanceof AppError) {
         throw error;
       }
@@ -514,9 +525,11 @@ export class ConsultationService {
     return {
       id: doc._id.toString(),
       patientId: doc.patientId._id?.toString() || doc.patientId.toString(),
-      studentId: doc.nutritionist.toString(),
+      patientName: doc.patientId.name || undefined,
+      studentId: doc.nutritionistId._id?.toString() || doc.nutritionistId.toString(),
       date: doc.scheduledDate,
       duration: doc.duration,
+      type: doc.type,
       weight: doc.weight,
       bloodPressure: doc.bloodPressure,
       observations: doc.observations,

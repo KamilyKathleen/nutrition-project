@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { X, Calendar, Weight, Ruler, Activity, FileText, Utensils, TrendingUp } from 'lucide-react';
 import { PatientHistory, DashboardPatient, NutritionalAssessment, DietPlan } from './types';
-import { nutritionistService } from '../../services/nutritionistService';
 
 interface PatientHistoryModalProps {
     patient: DashboardPatient | null;
@@ -16,10 +15,12 @@ export default function PatientHistoryModal({ patient, isOpen, onClose }: Patien
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'assessments' | 'plans' | 'overview'>('overview');
+    const [selectedPlan, setSelectedPlan] = useState<any>(null);
+    const [showPlanDetails, setShowPlanDetails] = useState(false);
 
     // Carregar histórico quando o modal abre
     useEffect(() => {
-        if (isOpen && patient && patient.status === 'linked') {
+        if (isOpen && patient) {
             loadPatientHistory();
         }
     }, [isOpen, patient]);
@@ -31,15 +32,129 @@ export default function PatientHistoryModal({ patient, isOpen, onClose }: Patien
             setLoading(true);
             setError(null);
             
-            console.log('🔍 [History Modal] Carregando histórico para:', patient.id);
-            const patientHistory = await nutritionistService.getPatientHistory(patient.id);
-            setHistory(patientHistory);
+            console.log('🔍 [History Modal] Carregando histórico para paciente:', patient.id);
+            
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                throw new Error('Token de autenticação não encontrado');
+            }
+
+            // Buscar avaliações nutricionais
+            const assessmentsResponse = await fetch(`http://localhost:8000/api/nutritional-assessments/patient/${patient.id}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            // Buscar planos alimentares
+            const plansResponse = await fetch(`http://localhost:8000/api/diet-plans/patient/${patient.id}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            let assessments: NutritionalAssessment[] = [];
+            let dietPlans: DietPlan[] = [];
+
+            if (assessmentsResponse.ok) {
+                const assessmentsData = await assessmentsResponse.json();
+                console.log('✅ Avaliações carregadas:', assessmentsData);
+                console.log('📊 Dados brutos:', assessmentsData.data);
+                
+                // Mapear dados da API para o formato do componente
+                assessments = (assessmentsData.data || []).map((item: any) => {
+                    console.log('🔄 Mapeando avaliação:', item);
+                    return {
+                        id: item._id || item.id,
+                        weight: item.anthropometricData?.weight || 0,
+                        height: item.anthropometricData?.height || 0,
+                        bodyFat: item.anthropometricData?.bodyFatPercentage,
+                        muscleMass: item.anthropometricData?.muscleMass,
+                        waistCircumference: item.anthropometricData?.waistCircumference,
+                        hipCircumference: item.anthropometricData?.hipCircumference,
+                        notes: item.observations || '',
+                        createdAt: item.createdAt
+                    };
+                });
+                console.log('✅ Avaliações mapeadas:', assessments);
+            } else {
+                console.warn('⚠️ Erro ao buscar avaliações:', assessmentsResponse.status);
+                const errorText = await assessmentsResponse.text();
+                console.warn('⚠️ Resposta do erro:', errorText);
+            }
+
+            if (plansResponse.ok) {
+                const plansData = await plansResponse.json();
+                console.log('✅ Planos alimentares carregados:', plansData);
+                console.log('📊 Dados brutos dos planos:', plansData.data);
+                
+                // Mapear dados da API para o formato do componente
+                dietPlans = (plansData.data || []).map((item: any) => {
+                    console.log('🔄 Mapeando plano:', item);
+                    return {
+                        id: item._id || item.id,
+                        title: item.name || 'Plano Alimentar',
+                        description: item.description || item.goals,
+                        startDate: item.startDate,
+                        endDate: item.endDate,
+                        isActive: item.isActive !== false,
+                        createdAt: item.createdAt
+                    };
+                });
+                console.log('✅ Planos mapeados:', dietPlans);
+            } else {
+                console.warn('⚠️ Erro ao buscar planos:', plansResponse.status);
+                const errorText = await plansResponse.text();
+                console.warn('⚠️ Resposta do erro:', errorText);
+            }
+
+            console.log('📋 History final:', { assessments, dietPlans });
+            
+            setHistory({
+                assessments,
+                dietPlans
+            });
             
         } catch (err: any) {
             console.error('❌ [History Modal] Erro:', err);
             setError(err.message || 'Erro ao carregar histórico');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleViewPlanDetails = async (planId: string) => {
+        try {
+            console.log('🔍 Carregando detalhes do plano:', planId);
+            const token = localStorage.getItem('authToken');
+            
+            const response = await fetch(`http://localhost:8000/api/diet-plans/${planId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log('✅ Resposta completa da API:', data);
+                console.log('📋 Dados do plano:', data.data);
+                console.log('🍽️ Meal plan:', data.data?.mealPlan);
+                console.log('🎯 Goals:', data.data?.nutritionalGoals);
+                console.log('📝 Guidelines:', data.data?.guidelines);
+                setSelectedPlan(data.data);
+                setShowPlanDetails(true);
+            } else {
+                console.error('❌ Erro ao buscar detalhes do plano:', response.status);
+                const errorText = await response.text();
+                console.error('❌ Resposta de erro:', errorText);
+                alert('Erro ao carregar detalhes do plano');
+            }
+        } catch (error) {
+            console.error('❌ Erro:', error);
+            alert('Erro ao carregar detalhes do plano');
         }
     };
 
@@ -76,7 +191,12 @@ export default function PatientHistoryModal({ patient, isOpen, onClose }: Patien
                         <h2 className="text-2xl font-bold mb-1">Histórico Completo</h2>
                         <p className="text-blue-100">{patient.name} • {patient.email}</p>
                     </div>
-                    <button onClick={onClose} className="text-blue-100 hover:text-white transition-colors">
+                    <button 
+                        onClick={onClose} 
+                        className="text-blue-100 hover:text-white transition-colors"
+                        title="Fechar"
+                        aria-label="Fechar modal"
+                    >
                         <X size={24} />
                     </button>
                 </div>
@@ -109,7 +229,7 @@ export default function PatientHistoryModal({ patient, isOpen, onClose }: Patien
                 </div>
 
                 {/* Conteúdo */}
-                <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 200px)' }}>
+                <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
                     
                     {loading && (
                         <div className="flex justify-center items-center py-12">
@@ -319,7 +439,7 @@ export default function PatientHistoryModal({ patient, isOpen, onClose }: Patien
                                             {history.dietPlans
                                                 .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                                                 .map((plan) => (
-                                                    <div key={plan.id} className="bg-white border border-gray-200 rounded-lg p-6">
+                                                    <div key={plan.id} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
                                                         <div className="flex justify-between items-start mb-4">
                                                             <div>
                                                                 <h4 className="text-lg font-medium text-gray-800 mb-1">{plan.title}</h4>
@@ -334,7 +454,7 @@ export default function PatientHistoryModal({ patient, isOpen, onClose }: Patien
                                                             </span>
                                                         </div>
                                                         
-                                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm mb-4">
                                                             <div>
                                                                 <p className="text-gray-600">Data de Início</p>
                                                                 <p className="font-medium text-gray-800">{formatDate(plan.startDate)}</p>
@@ -350,6 +470,14 @@ export default function PatientHistoryModal({ patient, isOpen, onClose }: Patien
                                                                 <p className="font-medium text-gray-800">{formatDate(plan.createdAt)}</p>
                                                             </div>
                                                         </div>
+
+                                                        <button
+                                                            onClick={() => handleViewPlanDetails(plan.id)}
+                                                            className="w-full mt-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors font-medium text-sm flex items-center justify-center gap-2"
+                                                        >
+                                                            <FileText size={16} />
+                                                            Ver Detalhes Completos
+                                                        </button>
                                                     </div>
                                                 ))}
                                         </div>
@@ -360,6 +488,175 @@ export default function PatientHistoryModal({ patient, isOpen, onClose }: Patien
                     )}
                 </div>
             </div>
+
+            {/* Modal de Detalhes do Plano Alimentar */}
+            {showPlanDetails && selectedPlan && (
+                <div className="fixed inset-0 bg-black bg-opacity-60 z-[60] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                        {/* Header */}
+                        <div className="sticky top-0 bg-gradient-to-r from-green-500 to-green-600 text-white p-6 flex justify-between items-center">
+                            <div>
+                                <h3 className="text-2xl font-bold">{selectedPlan.name || 'Plano Alimentar'}</h3>
+                                <p className="text-sm opacity-90 mt-1">{selectedPlan.description}</p>
+                            </div>
+                            <button 
+                                onClick={() => setShowPlanDetails(false)}
+                                className="text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-full transition-colors"
+                                title="Fechar"
+                                aria-label="Fechar detalhes"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        {/* Conteúdo */}
+                        <div className="p-6 space-y-6">
+                            {/* Meta Diária */}
+                            {selectedPlan.targetCalories && (
+                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                    <h4 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                                        <Activity size={20} />
+                                        Meta Diária
+                                    </h4>
+                                    <p className="text-3xl font-bold text-blue-700">{selectedPlan.targetCalories} kcal</p>
+                                </div>
+                            )}
+
+                            {/* Metas Nutricionais */}
+                            {(selectedPlan.targetProteins || selectedPlan.targetCarbohydrates || selectedPlan.targetFats) && (
+                                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                                    <h4 className="font-semibold text-green-900 mb-3">Metas Nutricionais</h4>
+                                    <div className="grid grid-cols-3 gap-4">
+                                        {selectedPlan.targetProteins && (
+                                            <div className="text-center">
+                                                <p className="text-sm text-gray-600">Proteínas</p>
+                                                <p className="text-xl font-bold text-green-700">{selectedPlan.targetProteins}g</p>
+                                            </div>
+                                        )}
+                                        {selectedPlan.targetCarbohydrates && (
+                                            <div className="text-center">
+                                                <p className="text-sm text-gray-600">Carboidratos</p>
+                                                <p className="text-xl font-bold text-green-700">{selectedPlan.targetCarbohydrates}g</p>
+                                            </div>
+                                        )}
+                                        {selectedPlan.targetFats && (
+                                            <div className="text-center">
+                                                <p className="text-sm text-gray-600">Gorduras</p>
+                                                <p className="text-xl font-bold text-green-700">{selectedPlan.targetFats}g</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Refeições */}
+                            {selectedPlan.meals && selectedPlan.meals.length > 0 && (
+                                <div>
+                                    <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                        <Utensils size={20} />
+                                        Refeições do Dia
+                                    </h4>
+                                    <div className="space-y-4">
+                                        {selectedPlan.meals.map((meal: any, index: number) => (
+                                            <div key={index} className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <h5 className="font-semibold text-gray-800">{getMealTypeLabel(meal.type)}</h5>
+                                                    <span className="text-sm text-gray-600">{meal.time}</span>
+                                                </div>
+                                                
+                                                {meal.foods && meal.foods.length > 0 && (
+                                                    <div className="space-y-2">
+                                                        {meal.foods.map((food: any, foodIndex: number) => (
+                                                            <div key={foodIndex} className="flex justify-between items-start text-sm bg-white p-2 rounded">
+                                                                <div className="flex-1">
+                                                                    <p className="font-medium text-gray-800">{food.name}</p>
+                                                                    <p className="text-gray-600 text-xs">
+                                                                        {food.quantity} {food.unit}
+                                                                    </p>
+                                                                </div>
+                                                                {food.calories && (
+                                                                    <span className="text-orange-600 font-semibold">
+                                                                        {food.calories} kcal
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+
+                                                {meal.notes && (
+                                                    <p className="text-sm text-gray-600 mt-2 italic">{meal.notes}</p>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Descrição como Orientações Gerais */}
+                            {selectedPlan.description && (
+                                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                    <h4 className="font-semibold text-yellow-900 mb-2 flex items-center gap-2">
+                                        <FileText size={20} />
+                                        Descrição e Orientações
+                                    </h4>
+                                    <p className="text-gray-700 whitespace-pre-wrap">{selectedPlan.description}</p>
+                                </div>
+                            )}
+
+                            {/* Informações do Plano */}
+                            <div className="border-t pt-4">
+                                <div className="grid grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                        <p className="text-gray-600">Data de Início</p>
+                                        <p className="font-medium text-gray-800">{formatDate(selectedPlan.startDate)}</p>
+                                    </div>
+                                    {selectedPlan.endDate && (
+                                        <div>
+                                            <p className="text-gray-600">Data de Término</p>
+                                            <p className="font-medium text-gray-800">{formatDate(selectedPlan.endDate)}</p>
+                                        </div>
+                                    )}
+                                    <div>
+                                        <p className="text-gray-600">Status</p>
+                                        <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${
+                                            selectedPlan.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                        }`}>
+                                            {selectedPlan.isActive ? 'Ativo' : 'Inativo'}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <p className="text-gray-600">Criado em</p>
+                                        <p className="font-medium text-gray-800">{formatDate(selectedPlan.createdAt)}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="border-t p-4 bg-gray-50">
+                            <button
+                                onClick={() => setShowPlanDetails(false)}
+                                className="w-full px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+                            >
+                                Fechar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
+}
+
+function getMealTypeLabel(type: string): string {
+    const labels: Record<string, string> = {
+        breakfast: 'Café da Manhã',
+        morning_snack: 'Lanche da Manhã',
+        lunch: 'Almoço',
+        afternoon_snack: 'Lanche da Tarde',
+        dinner: 'Jantar',
+        evening_snack: 'Ceia'
+    };
+    return labels[type] || type;
 }

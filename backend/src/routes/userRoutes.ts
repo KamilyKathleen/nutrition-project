@@ -32,12 +32,28 @@ const querySchema = Joi.object({
   role: Joi.string().valid(...Object.values(UserRole)).optional()
 });
 
+const searchQuerySchema = Joi.object({
+  email: Joi.string().email().required().messages({
+    'string.empty': 'E-mail é obrigatório para busca',
+    'string.email': 'E-mail inválido',
+    'any.required': 'E-mail é obrigatório para busca'
+  })
+});
+
 /**
  * 📋 ROTAS DE USUÁRIOS
  * 
  * Todas as rotas requerem autenticação
  * Algumas rotas requerem permissões específicas
  */
+
+// GET /api/users/search - Buscar usuário por e-mail (nutricionista)
+router.get('/search', 
+  authenticate as any,
+  authorize(UserRole.NUTRITIONIST) as any,
+  validateQuery(searchQuerySchema),
+  userController.searchByEmail
+);
 
 // GET /api/users - Listar usuários (admin)
 router.get('/', 

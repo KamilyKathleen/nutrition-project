@@ -84,11 +84,10 @@ export default function NewEvaluationModal({ isOpen, onClose, patient }: NewEval
         e.preventDefault();
         
         // Estruturar dados usando os estados individuais
-        const assessmentData = {
+        const assessmentData: any = {
             anthropometricData: {
                 height: Number.parseFloat(height),
                 weight: Number.parseFloat(weight),
-                bmi: Number.parseFloat(bmi || '0'),
                 waistCircumference: waistCircumference ? Number.parseFloat(waistCircumference) : undefined,
                 hipCircumference: hipCircumference ? Number.parseFloat(hipCircumference) : undefined,
                 bodyFatPercentage: bodyFatPercentage ? Number.parseFloat(bodyFatPercentage) : undefined,
@@ -100,13 +99,22 @@ export default function NewEvaluationModal({ isOpen, onClose, patient }: NewEval
                     { location: 'abdominal', measurement: abdominal ? Number.parseFloat(abdominal) : 0 }
                 ].filter(item => item.measurement > 0)
             },
-            physicalActivity: {
-                weeklyFrequency: Number.parseInt(weeklyFrequency) || 0,
-                sedentaryTime: sedentaryTime ? Number.parseInt(sedentaryTime) : 0,
-                activities: []
-            },
             observations: observations || ''
         };
+
+        // Só adicionar physicalActivity se tiver dados válidos
+        const weeklyFreq = Number.parseInt(weeklyFrequency) || 0;
+        const sedTime = sedentaryTime ? Number.parseInt(sedentaryTime) : 0;
+        
+        if (weeklyFreq > 0 || sedTime > 0) {
+            assessmentData.physicalActivity = {
+                weeklyFrequency: weeklyFreq,
+                sedentaryTime: sedTime,
+                activities: []
+            };
+        }
+
+        console.log('📊 Dados da avaliação a serem enviados:', assessmentData);
 
         try {
             const token = localStorage.getItem('authToken');
@@ -127,10 +135,11 @@ export default function NewEvaluationModal({ isOpen, onClose, patient }: NewEval
                 handleClose(); // Usar a função personalizada que reseta o formulário
             } else {
                 const error = await response.json();
-                alert('Erro ao salvar avaliação: ' + error.message);
+                console.error('❌ Erro do servidor:', error);
+                alert('Erro ao salvar avaliação: ' + (error.message || JSON.stringify(error)));
             }
         } catch (error) {
-            console.error('Erro ao salvar avaliação:', error);
+            console.error('❌ Erro ao salvar avaliação:', error);
             alert('Erro ao salvar avaliação. Tente novamente.');
         }
     };

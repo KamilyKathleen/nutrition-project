@@ -17,13 +17,26 @@ class ConsultationController {
    */
   async createConsultation(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
+      console.log('🎯 Controller - Dados recebidos:', req.body);
+      console.log('👤 Controller - Usuário:', req.user);
+      
       const nutritionistId = req.user!.userId;
       const {
         patientId,
         scheduledDate,
         duration,
-        type
+        type,
+        notes
       } = req.body;
+
+      console.log('📋 Controller - Processando dados:', {
+        patientId,
+        nutritionistId,
+        scheduledDate,
+        duration,
+        type,
+        notes
+      });
 
       const consultation = await ConsultationService.create({
         patientId,
@@ -39,6 +52,7 @@ class ConsultationController {
         data: consultation
       });
     } catch (error) {
+      console.error('❌ Controller - Erro:', error);
       next(error);
     }
   }

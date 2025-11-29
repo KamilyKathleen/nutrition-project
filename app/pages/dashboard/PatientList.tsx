@@ -1,15 +1,88 @@
 import { Patient } from "./types";
-import { Search, UserPlus, Eye, Edit, BarChartHorizontal } from "lucide-react";
+import { Search, Eye, Edit, Clock, AlertCircle } from "lucide-react";
 
 interface PatientListProps {
-    patients: Patient[];
-    searchTerm: string;
-    onSearchChange: (value: string) => void;
-    selectedPatient: Patient | null;
-    onSelectPatient: (patient: Patient) => void;
+    readonly patients: Patient[];
+    readonly searchTerm: string;
+    readonly onSearchChange: (value: string) => void;
+    readonly selectedPatient: Patient | null;
+    readonly onSelectPatient: (patient: Patient) => void;
+    readonly onViewHistory: (patient: Patient) => void;
+    readonly onEditPatient: (patient: Patient) => void;
 }
 
-export default function PatientList({ patients, searchTerm, onSearchChange, selectedPatient, onSelectPatient }: PatientListProps) {
+// Constantes para controle de expiração de convites
+const INVITE_EXPIRATION_DAYS = 7;
+const INVITE_URGENT_THRESHOLD_DAYS = 2;
+
+// Função para calcular dias restantes até a expiração
+const getDaysUntilExpiration = (inviteDate: string): number => {
+    const invite = new Date(inviteDate);
+    const expiration = new Date(invite.getTime() + INVITE_EXPIRATION_DAYS * 24 * 60 * 60 * 1000);
+    const now = new Date();
+    const daysLeft = Math.ceil((expiration.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
+    return daysLeft;
+};
+
+// Função para obter informações de status do paciente
+const getPatientStatusInfo = (patient: Patient) => {
+    const status = patient.status || 'Ativo';
+    
+    // Se paciente está vinculado (sistema atual de Ativo/Inativo)
+    if (status === 'Ativo') {
+        return {
+            label: 'Vinculado',
+            color: 'bg-green-100 text-green-800',
+            icon: null,
+            showExpiration: false,
+            daysLeft: 0
+        };
+    }
+    
+    // Se existe data de convite, verificar status
+    if (patient.inviteDate) {
+        const daysLeft = getDaysUntilExpiration(patient.inviteDate);
+        
+        if (daysLeft <= 0) {
+            return {
+                label: 'Convite Expirado',
+                color: 'bg-red-100 text-red-800',
+                icon: <AlertCircle size={14} className="inline mr-1" />,
+                showExpiration: false,
+                daysLeft: 0
+            };
+        }
+        
+        if (daysLeft <= INVITE_URGENT_THRESHOLD_DAYS) {
+            return {
+                label: 'Convite Pendente',
+                color: 'bg-yellow-100 text-yellow-800',
+                icon: <Clock size={14} className="inline mr-1 animate-pulse" />,
+                showExpiration: true,
+                daysLeft
+            };
+        }
+        
+        return {
+            label: 'Convite Pendente',
+            color: 'bg-blue-100 text-blue-800',
+            icon: <Clock size={14} className="inline mr-1" />,
+            showExpiration: true,
+            daysLeft
+        };
+    }
+    
+    // Paciente não vinculado sem convite
+    return {
+        label: 'Não Vinculado',
+        color: 'bg-gray-100 text-gray-800',
+        icon: null,
+        showExpiration: false,
+        daysLeft: 0
+    };
+};
+
+export default function PatientList({ patients, searchTerm, onSearchChange, selectedPatient, onSelectPatient, onViewHistory, onEditPatient }: PatientListProps) {
     return (
         <div className="bg-white p-6 rounded-lg shadow-md">
             <div className="flex flex-wrap justify-between items-center mb-4 gap-4">
@@ -57,22 +130,44 @@ export default function PatientList({ patients, searchTerm, onSearchChange, sele
                                 <td className="py-3 text-gray-600">{patient.email}</td>
                                 <td className="py-3 text-gray-600">{patient.lastAppointment}</td>
                                 <td className="py-3">
-                                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                                        patient.status === 'Ativo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                    }`}>
-                                        {patient.status}
-                                    </span>
+                                    {(() => {
+                                        const statusInfo = getPatientStatusInfo(patient);
+                                        return (
+                                            <div className="flex flex-col gap-1">
+                                                <span className={`px-2 py-1 text-xs font-semibold rounded-full inline-flex items-center ${statusInfo.color}`}>
+                                                    {statusInfo.icon}
+                                                    {statusInfo.label}
+                                                </span>
+                                                {statusInfo.showExpiration && statusInfo.daysLeft > 0 && (
+                                                    <span className={`text-xs ${statusInfo.daysLeft <= INVITE_URGENT_THRESHOLD_DAYS ? 'text-orange-600 font-semibold' : 'text-gray-600'}`}>
+                                                        Expira em {statusInfo.daysLeft} {statusInfo.daysLeft === 1 ? 'dia' : 'dias'}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        );
+                                    })()}
                                 </td>
                                 <td className="py-3">
                                     <div className="flex justify-center items-center space-x-2">
-                                        <button className="text-gray-500 hover:text-blue-600" title="Visualizar Perfil">
+                                        <button 
+                                            className="text-gray-500 hover:text-blue-600 transition-colors" 
+                                            title="Ver Histórico do Paciente"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onViewHistory(patient);
+                                            }}
+                                        >
                                             <Eye size={20} />
                                         </button>
-                                        <button className="text-gray-500 hover:text-green-600" title="Editar Paciente">
+                                        <button 
+                                            className="text-gray-500 hover:text-green-600 transition-colors" 
+                                            title="Editar Paciente / Enviar Convite"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onEditPatient(patient);
+                                            }}
+                                        >
                                             <Edit size={20} />
-                                        </button>
-                                        <button className="text-gray-500 hover:text-purple-600" title="Ver Relatórios">
-                                            <BarChartHorizontal size={20} />
                                         </button>
                                     </div>
                                 </td>

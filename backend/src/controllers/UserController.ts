@@ -191,7 +191,32 @@ export class UserController {
   });
 
   /**
-   * 🔄 ALTERAR ROLE (apenas admin)
+   * � BUSCAR USUÁRIO POR E-MAIL
+   * Função: Buscar usuários pelo e-mail (para vincular paciente)
+   * Por que: Permite nutricionistas encontrarem usuários existentes
+   */
+  searchByEmail = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const { email } = req.query;
+
+    // Validar se e-mail foi fornecido
+    if (!email || typeof email !== 'string') {
+      throw new AppError('E-mail é obrigatório', 400);
+    }
+
+    // Buscar usuários que correspondem ao e-mail
+    const users = await this.userService.searchByEmail(email);
+
+    const response: ApiResponse = {
+      success: true,
+      message: users.length > 0 ? 'Usuários encontrados' : 'Nenhum usuário encontrado',
+      data: users
+    };
+
+    res.json(response);
+  });
+
+  /**
+   * �🔄 ALTERAR ROLE (apenas admin)
    * Função: Mudar papel do usuário
    * Por que: Promover/rebaixar usuários
    */

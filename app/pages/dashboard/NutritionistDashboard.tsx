@@ -5,10 +5,13 @@ import { Patient } from "./types";
 import OverviewCards from "./OverviewCards";
 import PatientList from "./PatientList";
 import QuickActions from "./QuickActions";
-import AddPatientModal from './AddPatientModal'; // Importando o novo modal
+import AddPatientModal from './AddPatientModal';
 import NewEvaluationModal from "./NewEvaluationModal";
 import CreatePlanModal from "./CreatePlanModal";
-import InvitePatientModal from "./InvitePatientModal";
+import ScheduleAppointmentModal from "./ScheduleAppointmentModal";
+import ConsultationsCalendarModal from "./ConsultationsCalendarModal";
+import PatientHistoryModal from "./PatientHistoryModal";
+import EditPatientModal from "./EditPatientModal";
 
 export default function NutritionistDashboard() {
     const [patients, setPatients] = useState<Patient[]>([]);
@@ -19,9 +22,11 @@ export default function NutritionistDashboard() {
     const [isAddModalOpen, setAddModalOpen] = useState(false);
     const [isEvaluationModalOpen, setEvaluationModalOpen] = useState(false);
     const [isCreatePlanModalOpen, setCreatePlanModalOpen] = useState(false);
-    const [isInviteModalOpen, setInviteModalOpen] = useState(false);
-    const [sentInvites, setSentInvites] = useState<any[]>([]);
-    const scheduledAppointments = 0; // No futuro, virá da API
+    const [isScheduleAppointmentModalOpen, setScheduleAppointmentModalOpen] = useState(false);
+    const [isCalendarModalOpen, setCalendarModalOpen] = useState(false);
+    const [isHistoryModalOpen, setHistoryModalOpen] = useState(false);
+    const [isEditModalOpen, setEditModalOpen] = useState(false);
+    const [scheduledAppointments, setScheduledAppointments] = useState(0);
     
     // Buscar pacientes da API
     const fetchPatients = async () => {
@@ -48,6 +53,62 @@ export default function NutritionistDashboard() {
         }
     };
 
+    // Buscar consultas agendadas (futuras)
+    const fetchScheduledAppointments = async () => {
+        console.log('🔵 fetchScheduledAppointments INICIOU');
+        try {
+            const token = localStorage.getItem('authToken');
+            console.log('🔑 Token:', token ? 'existe' : 'NÃO EXISTE');
+            
+            const now = new Date();
+            console.log('📅 Data atual:', now);
+            
+            const response = await fetch('http://localhost:8000/api/consultations', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            console.log('📡 Response status:', response.status);
+            console.log('📡 Response ok:', response.ok);
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log('📅 DADOS COMPLETOS da API:', JSON.stringify(data, null, 2));
+                console.log('📅 Consultas carregadas (todas):', data.data);
+                console.log('📅 Número de consultas:', data.data?.length || 0);
+                
+                // Filtrar consultas FUTURAS agendadas (a partir de hoje)
+                const scheduledConsultations = (data.data || []).filter((consultation: any) => {
+                    const consultationDate = new Date(consultation.date);
+                    const isFuture = consultationDate >= now;
+                    const isScheduled = consultation.status === 'scheduled' || consultation.status === 'rescheduled';
+                    
+                    console.log('Verificando consulta:', {
+                        date: consultation.date,
+                        parsed: consultationDate,
+                        status: consultation.status,
+                        isFuture,
+                        isScheduled,
+                        willInclude: isFuture && isScheduled
+                    });
+                    
+                    return isFuture && isScheduled;
+                });
+                
+                console.log('📅 Consultas futuras agendadas:', scheduledConsultations);
+                console.log('📊 Total de consultas agendadas:', scheduledConsultations.length);
+                
+                setScheduledAppointments(scheduledConsultations.length);
+                console.log('✅ Estado atualizado! scheduledAppointments =', scheduledConsultations.length);
+            } else {
+                console.error('❌ Erro ao carregar consultas:', response.status);
+            }
+        } catch (error) {
+            console.error('❌ Erro ao buscar consultas:', error);
+        }
+    };
+
     // Filtra os pacientes com base no termo de busca (nome ou email)
     const filteredPatients = patients.filter(patient =>
         patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -59,87 +120,41 @@ export default function NutritionistDashboard() {
         setSelectedPatient(newPatient); // Seleciona o paciente recém-adicionado
     };
 
+    // Carregar pacientes ao montar o componente
+    useEffect(() => {
+        fetchPatients();
+        fetchScheduledAppointments();
+    }, []);
+
+    // Auto-refresh a cada 30 segundos
+    useEffect(() => {
+        const interval = setInterval(() => {
+            fetchPatients();
+            fetchScheduledAppointments();
+        }, 30000); // 30 segundos
+
+        return () => clearInterval(interval); // Limpar ao desmontar
+    }, []);
+
     const handleSelectPatient = (patient: Patient) => {
         // Se o paciente clicado já estiver selecionado, deselecione-o. Caso contrário, selecione-o.
         setSelectedPatient(prevSelected => 
             prevSelected?.id === patient.id ? null : patient
         );
     };
-
-    // Carregar dados iniciais
-    useEffect(() => {
-        const loadInitialData = async () => {
-            await Promise.all([
-                fetchPatients(),
-                fetchSentInvites()
-            ]);
-        };
-
-        loadInitialData();
-    }, []);
-
-    // Buscar convites enviados
-    const fetchSentInvites = async () => {
-        try {
-            const token = localStorage.getItem('authToken');
-            const response = await fetch('http://localhost:8000/api/patients/invites', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                setSentInvites(data.data || []);
-            }
-        } catch (error) {
-            console.error('Erro ao buscar convites enviados:', error);
-        }
-    };
-
-    // Cancelar convite
-    const handleCancelInvite = async (inviteId: string) => {
-        try {
-            const token = localStorage.getItem('authToken');
-            const response = await fetch(`http://localhost:8000/api/patients/invite/${inviteId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            
-            if (response.ok) {
-                alert('Convite cancelado com sucesso!');
-                // Remover da lista
-                setSentInvites(prev => prev.filter(invite => invite.id !== inviteId));
-            } else {
-                const error = await response.json();
-                alert('Erro ao cancelar convite: ' + error.message);
-            }
-        } catch (error) {
-            console.error('Erro ao cancelar convite:', error);
-            alert('Erro ao cancelar convite. Tente novamente.');
-        }
-    };
     
     return (
         <div className="space-y-8">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-800 mb-2">Visão Geral</h1>
-                    <p className="text-gray-600">Bem-vindo de volta, Dr(a).! Aqui está um resumo da sua atividade.</p>
-                </div>
-                <button 
-                    onClick={fetchPatients}
-                    disabled={loading}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center space-x-2"
-                >
-                    <span>🔄</span>
-                    <span>{loading ? 'Atualizando...' : 'Atualizar Lista'}</span>
-                </button>
+            <div>
+                <h1 className="text-3xl font-bold text-gray-800 mb-2">Visão Geral</h1>
+                <p className="text-gray-600">Bem-vindo de volta, Dr(a).! Aqui está um resumo da sua atividade.</p>
             </div>
             
-            <OverviewCards totalPatients={patients.length} scheduledAppointments={scheduledAppointments} />
+            <OverviewCards 
+                totalPatients={patients.length} 
+                scheduledAppointments={scheduledAppointments}
+                onScheduledAppointmentsClick={() => setCalendarModalOpen(true)}
+            />
             
             {selectedPatient && (
                 <div className="p-4 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg">
@@ -149,9 +164,10 @@ export default function NutritionistDashboard() {
             )}
 
             <QuickActions 
-                onInviteClick={() => setInviteModalOpen(true)} 
+                onInviteClick={() => setAddModalOpen(true)} 
                 onNewEvaluationClick={() => setEvaluationModalOpen(true)}
                 onCreatePlanClick={() => setCreatePlanModalOpen(true)}
+                onScheduleAppointmentClick={() => setScheduleAppointmentModalOpen(true)}
                 isPatientSelected={!!selectedPatient} 
             />
             
@@ -160,58 +176,21 @@ export default function NutritionistDashboard() {
                     <p className="text-gray-600">Carregando pacientes...</p>
                 </div>
             ) : (
-                <PatientList patients={filteredPatients} searchTerm={searchTerm} onSearchChange={setSearchTerm} selectedPatient={selectedPatient} onSelectPatient={handleSelectPatient} />
-            )}
-
-            {/* Convites Enviados */}
-            {sentInvites.length > 0 && (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-                    <h3 className="text-lg font-semibold text-yellow-800 mb-4">
-                        Convites Enviados ({sentInvites.length})
-                    </h3>
-                    
-                    <div className="space-y-3">
-                        {sentInvites.map((invite) => (
-                            <div key={invite.id} className="bg-white rounded-lg p-4 border border-yellow-100">
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <p className="font-medium text-gray-800">
-                                            {invite.patientEmail}
-                                            {invite.patientName && ` (${invite.patientName})`}
-                                        </p>
-                                        <p className="text-sm text-gray-600">
-                                            Status: <span className={`capitalize ${invite.status === 'pending' ? 'text-yellow-600' : 'text-gray-500'}`}>
-                                                {invite.status === 'pending' ? 'Pendente' : invite.status}
-                                            </span>
-                                        </p>
-                                        <p className="text-xs text-gray-500 mt-1">
-                                            Enviado em: {new Date(invite.sentAt).toLocaleDateString('pt-BR')}
-                                        </p>
-                                    </div>
-                                    <div className="flex space-x-2">
-                                        {invite.status === 'pending' && (
-                                            <button 
-                                                onClick={() => handleCancelInvite(invite.id)}
-                                                className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
-                                            >
-                                                Cancelar
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                    
-                    <div className="mt-4">
-                        <button 
-                            onClick={() => setInviteModalOpen(true)}
-                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                        >
-                            + Enviar Novo Convite
-                        </button>
-                    </div>
-                </div>
+                <PatientList 
+                    patients={filteredPatients} 
+                    searchTerm={searchTerm} 
+                    onSearchChange={setSearchTerm} 
+                    selectedPatient={selectedPatient} 
+                    onSelectPatient={handleSelectPatient}
+                    onViewHistory={(patient) => {
+                        setSelectedPatient(patient);
+                        setHistoryModalOpen(true);
+                    }}
+                    onEditPatient={(patient) => {
+                        setSelectedPatient(patient);
+                        setEditModalOpen(true);
+                    }}
+                />
             )}
 
             <AddPatientModal
@@ -229,10 +208,28 @@ export default function NutritionistDashboard() {
                 onClose={() => setCreatePlanModalOpen(false)}
                 patient={selectedPatient}
             />
-            <InvitePatientModal
-                isOpen={isInviteModalOpen}
-                onClose={() => setInviteModalOpen(false)}
-                onInviteSent={fetchSentInvites}
+            <ScheduleAppointmentModal
+                isOpen={isScheduleAppointmentModalOpen}
+                onClose={() => {
+                    setScheduleAppointmentModalOpen(false);
+                    fetchScheduledAppointments(); // Atualizar contagem
+                }}
+                patient={selectedPatient}
+            />
+            <ConsultationsCalendarModal
+                isOpen={isCalendarModalOpen}
+                onClose={() => setCalendarModalOpen(false)}
+            />
+            <PatientHistoryModal
+                patient={selectedPatient}
+                isOpen={isHistoryModalOpen}
+                onClose={() => setHistoryModalOpen(false)}
+            />
+            <EditPatientModal
+                patient={selectedPatient!}
+                isOpen={isEditModalOpen}
+                onClose={() => setEditModalOpen(false)}
+                onUpdate={fetchPatients}
             />
         </div>
     );

@@ -2,9 +2,45 @@
 import { Patient as ServicePatient } from '@/app/services';
 
 // Estender tipos dos serviços para incluir campos específicos do dashboard
-export interface Patient extends Omit<ServicePatient, 'dateOfBirth' | 'gender' | 'height' | 'weight' | 'activityLevel' | 'healthConditions' | 'allergies'> {
+export interface Patient extends Omit<ServicePatient, 'dateOfBirth' | 'gender' | 'height' | 'weight' | 'activityLevel' | 'healthConditions' | 'allergies' | 'createdAt'> {
     lastAppointment?: string;
     status: 'Ativo' | 'Inativo';
+    createdAt: string;
+    inviteDate?: string; // Data do convite para vinculação
+    inviteId?: string; // ID do convite pendente
+}
+
+// Alias para compatibilidade com PatientHistoryModal
+export type DashboardPatient = Patient;
+
+// Tipos para histórico de avaliações
+export interface NutritionalAssessment {
+    id: string;
+    weight: number;
+    height: number;
+    bodyFat?: number;
+    muscleMass?: number;
+    waistCircumference?: number;
+    hipCircumference?: number;
+    notes?: string;
+    createdAt: string;
+}
+
+// Tipos para planos alimentares
+export interface DietPlan {
+    id: string;
+    title: string;
+    description?: string;
+    startDate: string;
+    endDate?: string;
+    isActive: boolean;
+    createdAt: string;
+}
+
+// Histórico completo do paciente
+export interface PatientHistory {
+    assessments: NutritionalAssessment[];
+    dietPlans: DietPlan[];
 }
 
 export interface Appointment {

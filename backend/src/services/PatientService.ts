@@ -1,9 +1,41 @@
+
+import mongoose from 'mongoose';
 import { PatientModel } from '../models/Patient';
 import { Patient, CreatePatientRequest, UpdatePatientRequest } from '../types';
 import { AppError } from '../middlewares/errorHandler';
-import mongoose from 'mongoose';
 
 export class PatientService {
+  /**
+   * Vincula paciente a usuário por email, sem revelar existência do usuário
+   */
+  async linkToUserByEmail(patientId: string, email: string): Promise<void> {
+    if (!mongoose.Types.ObjectId.isValid(patientId)) {
+      // Não revelar detalhes
+      return;
+    }
+    const patient = await PatientModel.findById(patientId);
+    if (!patient) {
+      return;
+    }
+
+    // Buscar usuário pelo email
+    const UserModel = require('../models/User').UserModel;
+    const user = await UserModel.findOne({ email });
+    if (!user || user.role !== 'patient') {
+      // Não revelar existência
+      return;
+    }
+
+    // Atualizar paciente com o userId e status
+    await PatientModel.findByIdAndUpdate(
+      patientId,
+      {
+        userId: user._id,
+        status: 'linked'
+      }
+    );
+    // Aqui você pode enviar notificação, email, etc, se necessário
+  }
   /**
    * 🎯 CRIAR PACIENTE
    * Por que este método?
@@ -75,6 +107,7 @@ export class PatientService {
    * - Lista apenas pacientes do usuário logado
    * - Paginação para performance
    * - Apenas pacientes ativos (soft delete)
+   * - Enriquece com informações de convites pendentes
    */
   async findByNutritionistId(nutritionistId: string, page: number = 1, limit: number = 20): Promise<{
     patients: Patient[];
@@ -100,13 +133,40 @@ export class PatientService {
 
       const totalPages = Math.ceil(total / limit);
 
+      // 📧 Buscar convites pendentes para enriquecer dados
+      const PatientInviteModel = require('../models/PatientInvite').PatientInviteModel;
+      const patientEmails = patients
+        .filter(p => p.email)
+        .map(p => p.email!.toLowerCase());
+
+      const pendingInvites = await PatientInviteModel.find({
+        nutritionistId: new mongoose.Types.ObjectId(nutritionistId),
+        patientEmail: { $in: patientEmails },
+        status: 'pending'
+      }).exec();
+
+      // Criar mapa de convites por email
+      const inviteMap = new Map();
+      for (const invite of pendingInvites) {
+        inviteMap.set(invite.patientEmail.toLowerCase(), {
+          inviteId: invite._id.toString(),
+          inviteDate: invite.sentAt.toISOString()
+        });
+      }
+
       return {
         patients: patients.map(patient => {
           const patientJson = patient.toJSON();
+          const inviteInfo = patient.email ? inviteMap.get(patient.email.toLowerCase()) : null;
+          
           return {
             ...patientJson,
             id: patient._id.toString(),
-            nutritionistId: patient.nutritionistId.toString()
+            nutritionistId: patient.nutritionistId.toString(),
+            ...(inviteInfo && {
+              inviteId: inviteInfo.inviteId,
+              inviteDate: inviteInfo.inviteDate
+            })
           } as Patient;
         }),
         total,
@@ -171,12 +231,79 @@ export class PatientService {
   }
 
   /**
-   * 🗑️ DELETAR PACIENTE (SOFT DELETE)
+   * 🗑️ DELETAR PACIENTE
    * Por que este método?
    * - Soft delete para manter histórico
    * - Valida se existe antes de deletar
    * - Retorna confirmação da operação
    */
+
+  /**
+   * 🔗 VINCULAR PACIENTE A USUÁRIO
+   * Por que este método?
+   * - Permite vincular um paciente criado pelo nutricionista a uma conta de usuário existente
+   * - Atualiza o status para 'linked' quando vinculado
+   * - Valida se o usuário existe antes de vincular
+   */
+  async linkToUser(patientId: string, userId: string): Promise<Patient> {
+    try {
+      // Validar IDs
+      if (!mongoose.Types.ObjectId.isValid(patientId)) {
+        throw new AppError('ID de paciente inválido', 400);
+      }
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        throw new AppError('ID de usuário inválido', 400);
+      }
+
+      // Buscar paciente
+      const patient = await PatientModel.findById(patientId);
+      if (!patient) {
+        throw new AppError('Paciente não encontrado', 404);
+      }
+
+      // Verificar se o usuário existe (importar UserModel se necessário)
+      const UserModel = require('../models/User').UserModel;
+      const user = await UserModel.findById(userId);
+      if (!user) {
+        throw new AppError('Usuário não encontrado', 404);
+      }
+
+      // Verificar se o usuário é um paciente (não nutricionista)
+      if (user.role !== 'patient') {
+        throw new AppError('Usuário não é um paciente', 400);
+      }
+
+      // Atualizar paciente com o userId e status
+      const updatedPatient = await PatientModel.findByIdAndUpdate(
+        patientId,
+        { 
+          userId: new mongoose.Types.ObjectId(userId),
+          status: 'linked',
+          email: user.email // Atualizar email com o do usuário
+        },
+        { new: true, runValidators: true }
+      );
+
+      if (!updatedPatient) {
+        throw new AppError('Erro ao vincular paciente', 500);
+      }
+
+      const patientJson = updatedPatient.toJSON();
+      return {
+        ...patientJson,
+        id: updatedPatient._id.toString(),
+        nutritionistId: updatedPatient.nutritionistId.toString(),
+        userId: updatedPatient.userId?.toString()
+      } as Patient;
+    } catch (error) {
+      if (error instanceof AppError) {
+        throw error;
+      }
+      console.error('Erro ao vincular paciente:', error);
+      throw new AppError('Erro ao vincular paciente', 500);
+    }
+  }
+
   async delete(id: string): Promise<void> {
     try {
       if (!mongoose.Types.ObjectId.isValid(id)) {

@@ -11,17 +11,13 @@ const patientController = new PatientController();
 // 🎯 SCHEMAS DE VALIDAÇÃO
 const createPatientSchema = Joi.object({
   name: Joi.string().required().min(2).max(100),
-  email: Joi.string().email().optional(),
-  birthDate: Joi.date().required(),
-  gender: Joi.string().valid('male', 'female', 'other').required(),
-  address: Joi.object({
-    street: Joi.string().required(),
-    number: Joi.string().required(),
-    neighborhood: Joi.string().required(),
-    city: Joi.string().required(),
-    state: Joi.string().length(2).required(),
-    zipCode: Joi.string().required()
-  }).optional(),
+  email: Joi.string().email().optional().allow('', null),
+  phone: Joi.string().optional(),
+  dateOfBirth: Joi.date().optional(),
+  birthDate: Joi.date().optional(),
+  sex: Joi.string().valid('male', 'female', 'other').optional(),
+  gender: Joi.string().valid('male', 'female', 'other').optional(),
+  goal: Joi.string().optional(),
   medicalHistory: Joi.string().optional(),
   allergies: Joi.array().items(Joi.string()).optional(),
   medications: Joi.array().items(Joi.string()).optional(),
@@ -31,17 +27,13 @@ const createPatientSchema = Joi.object({
 
 const updatePatientSchema = Joi.object({
   name: Joi.string().min(2).max(100).optional(),
-  email: Joi.string().email().optional(),
+  email: Joi.string().email().optional().allow('', null),
+  phone: Joi.string().optional(),
+  dateOfBirth: Joi.date().optional(),
   birthDate: Joi.date().optional(),
+  sex: Joi.string().valid('male', 'female', 'other').optional(),
   gender: Joi.string().valid('male', 'female', 'other').optional(),
-  address: Joi.object({
-    street: Joi.string().optional(),
-    number: Joi.string().optional(),
-    neighborhood: Joi.string().optional(),
-    city: Joi.string().optional(),
-    state: Joi.string().length(2).optional(),
-    zipCode: Joi.string().optional()
-  }).optional(),
+  goal: Joi.string().optional(),
   medicalHistory: Joi.string().optional(),
   allergies: Joi.array().items(Joi.string()).optional(),
   medications: Joi.array().items(Joi.string()).optional(),
@@ -132,7 +124,29 @@ router.put(
 );
 
 /**
- * 🗑️ DELETAR PACIENTE
+ * � VINCULAR PACIENTE A USUÁRIO
+ * PUT /api/patients/:id/link
+ * Headers: Authorization: Bearer <token>
+ * Body: { userId: string }
+ */
+const linkPatientSchema = Joi.object({
+  email: Joi.string().email().required().messages({
+    'string.empty': 'E-mail é obrigatório',
+    'any.required': 'E-mail é obrigatório',
+    'string.email': 'E-mail inválido'
+  })
+});
+
+router.put(
+  '/:id/link',
+  authenticate,
+  validate(linkPatientSchema),
+  auditPatientAccess('PATIENT_UPDATE'),
+  patientController.linkToUser.bind(patientController)
+);
+
+/**
+ * �🗑️ DELETAR PACIENTE
  * DELETE /api/patients/:id
  * Headers: Authorization: Bearer <token>
  */

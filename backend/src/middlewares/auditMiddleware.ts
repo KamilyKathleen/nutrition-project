@@ -7,7 +7,7 @@ import { AuditService } from '../services/AuditService';
  */
 export const auditSensitiveAccess = (
   action: string,
-  resourceType: 'PATIENT' | 'USER' | 'ASSESSMENT',
+  resourceType: 'PATIENT' | 'USER' | 'ASSESSMENT' | 'DIET_PLAN' | 'CONSULTATION',
   extractResourceId: (req: Request) => string
 ) => {
   return async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {

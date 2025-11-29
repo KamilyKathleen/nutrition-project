@@ -1,6 +1,6 @@
 'use client';
 
-import { UserPlus, ClipboardPlus, Utensils, CalendarPlus, BarChart2 } from 'lucide-react';
+import { UserPlus, ClipboardPlus, Utensils, CalendarPlus } from 'lucide-react';
 
 const ActionButton = ({ icon: Icon, label, onClick, disabled }: { icon: React.ElementType, label: string, onClick?: () => void, disabled?: boolean }) => (
     <button 
@@ -13,16 +13,27 @@ const ActionButton = ({ icon: Icon, label, onClick, disabled }: { icon: React.El
     </button>
 );
 
-export default function QuickActions({ onInviteClick, onNewEvaluationClick, onCreatePlanClick, isPatientSelected }: { onInviteClick: () => void, onNewEvaluationClick: () => void, onCreatePlanClick: () => void, isPatientSelected: boolean }) {
+export default function QuickActions({ 
+    onInviteClick, 
+    onNewEvaluationClick, 
+    onCreatePlanClick, 
+    onScheduleAppointmentClick,
+    isPatientSelected 
+}: { 
+    readonly onInviteClick: () => void, 
+    readonly onNewEvaluationClick: () => void, 
+    readonly onCreatePlanClick: () => void,
+    readonly onScheduleAppointmentClick: () => void,
+    readonly isPatientSelected: boolean 
+}) {
     return (
         <div>
             <h2 className="text-xl font-bold text-gray-800 mb-4">Ações Rápidas</h2>
             <div className="flex flex-wrap gap-4">
-                <ActionButton onClick={onInviteClick} icon={UserPlus} label="Convidar Paciente" />
+                <ActionButton onClick={onInviteClick} icon={UserPlus} label="Adicionar Paciente" />
                 <ActionButton onClick={onNewEvaluationClick} icon={ClipboardPlus} label="Nova Avaliação" disabled={!isPatientSelected} />
                 <ActionButton onClick={onCreatePlanClick} icon={Utensils} label="Criar Plano" disabled={!isPatientSelected} />
-                <ActionButton icon={CalendarPlus} label="Agendar Consulta" disabled={!isPatientSelected} />
-                <ActionButton icon={BarChart2} label="Gerar Relatório" disabled={!isPatientSelected} />
+                <ActionButton onClick={onScheduleAppointmentClick} icon={CalendarPlus} label="Agendar Consulta" disabled={!isPatientSelected} />
             </div>
         </div>
     );

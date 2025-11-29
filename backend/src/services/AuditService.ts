@@ -8,7 +8,7 @@ interface IAuditLog extends Document {
   userId: mongoose.Types.ObjectId;
   userEmail: string;
   action: string;
-  resourceType: 'PATIENT' | 'USER' | 'ASSESSMENT';
+  resourceType: 'PATIENT' | 'USER' | 'ASSESSMENT' | 'DIET_PLAN' | 'CONSULTATION';
   resourceId: mongoose.Types.ObjectId;
   details?: any;
   ipAddress?: string;
@@ -45,6 +45,10 @@ const auditLogSchema = new Schema<IAuditLog>({
       'diet_plan_read',
       'diet_plan_update',
       'diet_plan_delete',
+      'consultation_create',
+      'consultation_read',
+      'consultation_update',
+      'consultation_delete',
       'CREATE',
       'READ',
       'UPDATE',
@@ -55,7 +59,7 @@ const auditLogSchema = new Schema<IAuditLog>({
   resourceType: {
     type: String,
     required: true,
-    enum: ['PATIENT', 'USER', 'ASSESSMENT', 'DIET_PLAN']
+    enum: ['PATIENT', 'USER', 'ASSESSMENT', 'DIET_PLAN', 'CONSULTATION']
   },
   resourceId: {
     type: Schema.Types.ObjectId,
@@ -109,7 +113,7 @@ export class AuditService {
     userId: string;
     userEmail: string;
     action: string;
-    resourceType: 'PATIENT' | 'USER' | 'ASSESSMENT';
+    resourceType: 'PATIENT' | 'USER' | 'ASSESSMENT' | 'DIET_PLAN' | 'CONSULTATION';
     resourceId: string;
     details?: any;
     ipAddress?: string;

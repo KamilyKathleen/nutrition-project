@@ -1,43 +1,11 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { Patient, Gender, Address } from '../types';
+import { Patient, Gender } from '../types';
 
-export interface IPatient extends Omit<Patient, 'id' | 'nutritionistId' | '_id'>, Document {
+export interface IPatient extends Omit<Patient, 'id' | 'nutritionistId' | 'userId' | '_id'>, Document {
   nutritionistId: mongoose.Types.ObjectId;
+  userId?: mongoose.Types.ObjectId;
+  status?: 'linked' | 'not_linked' | 'invite_pending';
 }
-
-const addressSchema = new Schema<Address>({
-  street: {
-    type: String,
-    required: [true, 'Rua é obrigatória'],
-    trim: true
-  },
-  number: {
-    type: String,
-    required: [true, 'Número é obrigatório'],
-    trim: true
-  },
-  neighborhood: {
-    type: String,
-    required: [true, 'Bairro é obrigatório'],
-    trim: true
-  },
-  city: {
-    type: String,
-    required: [true, 'Cidade é obrigatória'],
-    trim: true
-  },
-  state: {
-    type: String,
-    required: [true, 'Estado é obrigatório'],
-    trim: true,
-    maxlength: [2, 'Estado deve ter 2 caracteres']
-  },
-  zipCode: {
-    type: String,
-    required: [true, 'CEP é obrigatório'],
-    trim: true
-  }
-}, { _id: false });
 
 const patientSchema = new Schema<IPatient>({
   name: {
@@ -60,16 +28,12 @@ const patientSchema = new Schema<IPatient>({
   },
   birthDate: {
     type: Date,
-    required: [true, 'Data de nascimento é obrigatória']
+    required: false // Tornando opcional temporariamente
   },
   gender: {
     type: String,
     enum: Object.values(Gender),
-    required: [true, 'Gênero é obrigatório']
-  },
-  address: {
-    type: addressSchema,
-    default: null
+    required: false // Tornando opcional temporariamente
   },
   notes: {
     type: String,
@@ -79,6 +43,16 @@ const patientSchema = new Schema<IPatient>({
     type: Schema.Types.ObjectId,
     ref: 'User',
     required: [true, 'ID do nutricionista é obrigatório']
+  },
+  userId: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    default: null // Opcional, usado quando paciente é vinculado a uma conta de usuário
+  },
+  status: {
+    type: String,
+    enum: ['linked', 'not_linked', 'invite_pending'],
+    default: 'not_linked'
   },
   isActive: {
     type: Boolean,
@@ -103,6 +77,9 @@ patientSchema.set('toJSON', {
     delete ret.__v;
     if (ret.nutritionistId) {
       ret.nutritionistId = ret.nutritionistId.toString();
+    }
+    if (ret.userId) {
+      ret.userId = ret.userId.toString();
     }
     return ret;
   }

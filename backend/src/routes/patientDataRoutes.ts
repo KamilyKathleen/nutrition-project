@@ -248,7 +248,6 @@ router.get('/profile', async (req: any, res: any) => {
                 email: patient.email,
                 birthDate: patient.birthDate,
                 gender: patient.gender,
-                address: patient.address,
                 nutritionist: patient.nutritionistId ? {
                     id: (patient.nutritionistId as any)._id,
                     name: (patient.nutritionistId as any).name,

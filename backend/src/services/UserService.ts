@@ -154,6 +154,24 @@ export class UserService {
     }
   }
 
+  async searchByEmail(email: string): Promise<User[]> {
+    try {
+      // Buscar usuários cujo e-mail contenha o texto buscado (case-insensitive)
+      const users = await UserModel.find({
+        email: { $regex: email, $options: 'i' },
+        isActive: true
+      })
+      .select('-password') // Não retornar senha
+      .limit(10) // Limitar a 10 resultados
+      .exec();
+
+      return users.map(user => user.toJSON() as User);
+    } catch (error: any) {
+      console.error('Erro ao buscar usuários por e-mail:', error);
+      throw new AppError('Erro ao buscar usuários', 500);
+    }
+  }
+
   async update(id: string, updateData: Partial<User>): Promise<User> {
     try {
       if (!mongoose.Types.ObjectId.isValid(id)) {
