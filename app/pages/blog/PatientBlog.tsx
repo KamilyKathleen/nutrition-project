@@ -46,7 +46,7 @@ export default function PatientBlog() {
                 limit: 100,
                 sortBy: 'publishedAt',
                 sortOrder: 'desc',
-                status: 'published' // Pacientes veem apenas posts publicados
+                status: BlogStatus.PUBLISHED // Pacientes veem apenas posts publicados
             });
             setPosts(response.data);
         } catch (err: any) {
@@ -158,10 +158,11 @@ export default function PatientBlog() {
                     <div className="pt-4 border-t border-gray-200 space-y-4">
                         {/* Filtro por categoria */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label htmlFor="category-filter" className="block text-sm font-medium text-gray-700 mb-2">
                                 Categoria
                             </label>
                             <select
+                                id="category-filter"
                                 value={selectedCategory}
                                 onChange={(e) => setSelectedCategory(e.target.value as BlogCategory | '')}
                                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mintGreen focus:border-mintGreen"
@@ -200,31 +201,49 @@ export default function PatientBlog() {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                    {filteredPosts.map((post) => (
-                        <div key={post._id} className="group">
-                            <Card
-                                image={post.featuredImage || '/img/default-blog.jpg'}
-                                title={CATEGORY_LABELS[post.category as BlogCategory] || ''}
-                                subtitle={post.title}
-                                description={post.content.substring(0, 120) + '...'}
-                                page={`/pages/blog/${post.slug}`}
-                                button="Ler mais"
-                            />
-                            {/* Info adicional */}
-                            <div className="mt-2 px-2 flex items-center justify-between text-xs text-gray-500">
-                                {post.author && (
-                                    <span className="flex items-center gap-1">
-                                        👤 {post.author.name}
-                                    </span>
-                                )}
-                                {post.readingTime && (
-                                    <span className="flex items-center gap-1">
-                                        ⏱️ {post.readingTime} min
-                                    </span>
-                                )}
+                    {filteredPosts.map((post) => {
+                        // Função para limpar HTML e extrair texto puro
+                        const getCleanExcerpt = (content: string, maxLength: number = 80): string => {
+                            // Remove tags HTML
+                            const withoutTags = content.replace(/<[^>]*>/g, '');
+                            // Decodifica entidades HTML comuns
+                            const decoded = withoutTags
+                                .replace(/&nbsp;/g, ' ')
+                                .replace(/&amp;/g, '&')
+                                .replace(/&lt;/g, '<')
+                                .replace(/&gt;/g, '>')
+                                .replace(/&quot;/g, '"')
+                                .replace(/&#39;/g, "'")
+                                .replace(/&apos;/g, "'");
+                            // Remove espaços múltiplos e quebras de linha
+                            const cleaned = decoded.replace(/\s+/g, ' ').trim();
+                            // Trunca no tamanho desejado
+                            return cleaned.length > maxLength 
+                                ? cleaned.substring(0, maxLength) + '...' 
+                                : cleaned;
+                        };
+
+                        return (
+                            <div key={post._id}>
+                                <Card
+                                    image={post.featuredImage || '/img/default-blog.jpg'}
+                                    title={CATEGORY_LABELS[post.category as BlogCategory] || ''}
+                                    subtitle={post.title}
+                                    description={getCleanExcerpt(post.content)}
+                                    page={`/pages/blog/${post.slug}`}
+                                    button="Ler mais"
+                                />
+                                {/* Info adicional */}
+                                <div className="mt-2 px-2 text-xs text-gray-500">
+                                    {post.author && (
+                                        <span className="flex items-center gap-1">
+                                            {post.author.name}
+                                        </span>
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
         </div>

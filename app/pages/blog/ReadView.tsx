@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import Card from "@/app/components/card";
 import BlogService, { BlogPost, BlogStatus, BlogCategory } from '@/app/services/blogService';
-import { Edit, Trash2, Eye, Search, Filter, X } from 'lucide-react';
+import { Edit, Trash2, Eye, Search, Filter, X, User } from 'lucide-react';
 
 const CATEGORY_LABELS: Record<BlogCategory, string> = {
     [BlogCategory.NUTRITION]: 'Nutrição',
@@ -242,64 +242,93 @@ export default function ReadView() {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                    {filteredPosts.map((post) => (
-                        <div key={post._id} className="relative group">
-                            <Card
-                                image={post.featuredImage || '/img/default-blog.jpg'}
-                                title={CATEGORY_LABELS[post.category as BlogCategory] || ''}
-                                subtitle={post.title}
-                                description={post.content.substring(0, 120) + '...'}
-                                page={`/pages/blog/${post.slug}`}
-                                button="Ler mais"
-                            />
-                            
-                            {/* Badge de status */}
-                            <div className="absolute top-2 right-2 z-10">
-                                <span className={`px-3 py-1 rounded-full text-xs font-semibold shadow-lg ${
-                                    post.status === 'published' ? 'bg-green-500 text-white' : 'bg-yellow-500 text-black'
-                                }`}>
-                                    {post.status === 'published' ? 'Publicado' : 'Rascunho'}
-                                </span>
-                            </div>
+                    {filteredPosts.map((post) => {
+                        // Função para limpar HTML e extrair texto puro
+                        const getCleanExcerpt = (content: string, maxLength: number = 80): string => {
+                            // Remove tags HTML
+                            const withoutTags = content.replace(/<[^>]*>/g, '');
+                            // Decodifica entidades HTML comuns
+                            const decoded = withoutTags
+                                .replace(/&nbsp;/g, ' ')
+                                .replace(/&amp;/g, '&')
+                                .replace(/&lt;/g, '<')
+                                .replace(/&gt;/g, '>')
+                                .replace(/&quot;/g, '"')
+                                .replace(/&#39;/g, "'")
+                                .replace(/&apos;/g, "'");
+                            // Remove espaços múltiplos e quebras de linha
+                            const cleaned = decoded.replace(/\s+/g, ' ').trim();
+                            // Trunca no tamanho desejado
+                            return cleaned.length > maxLength 
+                                ? cleaned.substring(0, maxLength) + '...' 
+                                : cleaned;
+                        };
 
-                            {/* Ações ao hover */}
-                            <div className="absolute bottom-16 left-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                <button
-                                    onClick={() => window.open(`/pages/blog/${post.slug}`, '_blank')}
-                                    className="flex-1 bg-blue-500 text-white px-3 py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-blue-600 shadow-lg"
-                                    title="Visualizar"
-                                >
-                                    <Eye className="h-4 w-4" />
-                                </button>
-                                <button
-                                    onClick={() => alert('Função de editar em desenvolvimento')}
-                                    className="flex-1 bg-yellow-500 text-white px-3 py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-yellow-600 shadow-lg"
-                                    title="Editar"
-                                >
-                                    <Edit className="h-4 w-4" />
-                                </button>
-                                <button
-                                    onClick={() => post._id && handleDelete(post._id)}
-                                    className="flex-1 bg-red-500 text-white px-3 py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-red-600 shadow-lg"
-                                    title="Excluir"
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </button>
-                            </div>
-
-                            {/* Info adicional */}
-                            <div className="mt-2 px-2 flex items-center justify-between text-xs text-gray-500">
-                                <span className="flex items-center gap-1">
-                                    👁️ {post.views || 0} views
-                                </span>
-                                {post.readingTime && (
-                                    <span className="flex items-center gap-1">
-                                        ⏱️ {post.readingTime} min
+                        return (
+                            <div key={post._id} className="relative">
+                                <Card
+                                    image={post.featuredImage || '/img/default-blog.jpg'}
+                                    title={CATEGORY_LABELS[post.category as BlogCategory] || ''}
+                                    subtitle={post.title}
+                                    description={getCleanExcerpt(post.content)}
+                                    page={`/pages/blog/${post.slug}`}
+                                    button="Ler mais"
+                                />
+                                
+                                {/* Badge de status */}
+                                <div className="absolute top-2 right-2 z-10">
+                                    <span className={`px-3 py-1 rounded-full text-xs font-semibold shadow-lg ${
+                                        post.status === 'published' ? 'bg-green-500 text-white' : 'bg-yellow-500 text-black'
+                                    }`}>
+                                        {post.status === 'published' ? 'Publicado' : 'Rascunho'}
                                     </span>
-                                )}
+                                </div>
+
+                                {/* Botões de ação */}
+                                <div className="mt-3 px-2 flex gap-2">
+                                    <button
+                                        onClick={() => window.open(`/pages/blog/${post.slug}`, '_blank')}
+                                        className="flex-1 border-2 border-petroleumGreen text-petroleumGreen hover:bg-petroleumGreen hover:text-white px-3 py-2 rounded-md flex items-center justify-center gap-2 transition-colors text-sm font-semibold"
+                                        title="Visualizar post"
+                                    >
+                                        <Eye className="h-4 w-4" />
+                                        Ver
+                                    </button>
+                                    <button
+                                        onClick={() => alert('Função de editar em desenvolvimento')}
+                                        className="flex-1 border-2 border-mintGreen text-petroleumGreen hover:bg-mintGreen hover:text-white px-3 py-2 rounded-md flex items-center justify-center gap-2 transition-colors text-sm font-semibold"
+                                        title="Editar post"
+                                    >
+                                        <Edit className="h-4 w-4" />
+                                        Editar
+                                    </button>
+                                    <button
+                                        onClick={() => post._id && handleDelete(post._id)}
+                                        className="flex-1 border-2 border-red-400 text-red-600 hover:bg-red-500 hover:text-white px-3 py-2 rounded-md flex items-center justify-center gap-2 transition-colors text-sm font-semibold"
+                                        title="Excluir post"
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                        Excluir
+                                    </button>
+                                </div>
+
+                                {/* Info adicional */}
+                                <div className="mt-2 px-2 text-xs text-gray-600">
+                                    {post.author && (
+                                        <div className="flex items-center gap-1.5">
+                                            <div className="w-5 h-5 rounded-full bg-petroleumGreen flex items-center justify-center">
+                                                <User className="w-3 h-3 text-white" />
+                                            </div>
+                                            <span className="font-medium">{post.author.name}</span>
+                                        </div>
+                                    )}
+                                    <div className="flex items-center gap-1 mt-1 text-gray-500">
+                                        <span>👁️ {post.views || 0} visualizações</span>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
         </div>

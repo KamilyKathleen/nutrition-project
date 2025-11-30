@@ -8,6 +8,7 @@ export interface Patient extends Omit<ServicePatient, 'dateOfBirth' | 'gender' |
     createdAt: string;
     inviteDate?: string; // Data do convite para vinculação
     inviteId?: string; // ID do convite pendente
+    // userId já está herdado de ServicePatient como opcional
 }
 
 // Alias para compatibilidade com PatientHistoryModal

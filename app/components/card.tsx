@@ -40,7 +40,7 @@ export default function Card({ image, description, title, subtitle, page, button
                 <h3 className="text-xl ">{title}</h3>
                 <h3 className="text-xl text-petroleumGreen font-bold uppercase">{subtitle}</h3>
                 <hr className='my-4 text-gray-200' />
-                <p className="">{description}</p>
+                <p className="line-clamp-3 overflow-hidden text-ellipsis">{description}</p>
                 <div className="flex justify-center my-4">
                     <Link
                         href={page}

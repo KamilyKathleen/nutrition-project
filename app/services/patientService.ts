@@ -3,7 +3,7 @@ import { apiClient } from './api';
 // Tipos para paciente
 export interface Patient {
     id: string;
-    userId: string;
+    userId?: string; // Opcional - só existe quando paciente está vinculado a uma conta
     name: string;
     email: string;
     dateOfBirth: string;

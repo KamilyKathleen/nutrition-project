@@ -163,6 +163,7 @@ export class PatientService {
             ...patientJson,
             id: patient._id.toString(),
             nutritionistId: patient.nutritionistId.toString(),
+            userId: patient.userId?.toString(), // Incluir userId se existir
             ...(inviteInfo && {
               inviteId: inviteInfo.inviteId,
               inviteDate: inviteInfo.inviteDate

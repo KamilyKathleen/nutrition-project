@@ -26,10 +26,8 @@ const getDaysUntilExpiration = (inviteDate: string): number => {
 
 // Função para obter informações de status do paciente
 const getPatientStatusInfo = (patient: Patient) => {
-    const status = patient.status || 'Ativo';
-    
-    // Se paciente está vinculado (sistema atual de Ativo/Inativo)
-    if (status === 'Ativo') {
+    // Se paciente tem userId, está vinculado a uma conta
+    if (patient.userId) {
         return {
             label: 'Vinculado',
             color: 'bg-green-100 text-green-800',
