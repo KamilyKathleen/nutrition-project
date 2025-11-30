@@ -1,7 +1,7 @@
 'use client';
 
 import { X, UserPlus } from 'lucide-react';
-import { Patient } from './types';
+import { Patient } from '../../shared/types';
 
 interface AddPatientModalProps {
     isOpen: boolean;

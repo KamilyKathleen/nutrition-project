@@ -1,17 +1,17 @@
 'use client';
 
 import { useState, useEffect } from "react";
-import { Patient } from "./types";
-import OverviewCards from "./OverviewCards";
-import PatientList from "./PatientList";
-import QuickActions from "./QuickActions";
-import AddPatientModal from './AddPatientModal';
-import NewEvaluationModal from "./NewEvaluationModal";
-import CreatePlanModal from "./CreatePlanModal";
-import ScheduleAppointmentModal from "./ScheduleAppointmentModal";
-import ConsultationsCalendarModal from "./ConsultationsCalendarModal";
-import PatientHistoryModal from "./PatientHistoryModal";
-import EditPatientModal from "./EditPatientModal";
+import { Patient } from "../shared/types";
+import OverviewCards from "./components/OverviewCards";
+import PatientList from "./components/PatientList";
+import QuickActions from "./components/QuickActions";
+import AddPatientModal from './modals/AddPatientModal';
+import NewEvaluationModal from "./modals/NewEvaluationModal";
+import CreatePlanModal from "./modals/CreatePlanModal";
+import ScheduleAppointmentModal from "./modals/ScheduleAppointmentModal";
+import ConsultationsCalendarModal from "./modals/ConsultationsCalendarModal";
+import PatientHistoryModal from "./modals/PatientHistoryModal";
+import EditPatientModal from "./modals/EditPatientModal";
 
 export default function NutritionistDashboard() {
     const [patients, setPatients] = useState<Patient[]>([]);

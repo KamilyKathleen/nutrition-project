@@ -1,7 +1,7 @@
 'use client';
 
 import { X, ClipboardPlus, Calculator, Activity } from 'lucide-react';
-import { Patient } from './types';
+import { Patient } from '../../shared/types';
 import { useState, useEffect } from 'react';
 
 interface NewEvaluationModalProps {

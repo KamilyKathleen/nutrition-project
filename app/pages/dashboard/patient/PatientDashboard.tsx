@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { Calendar, Utensils, BarChart3, BookHeart, UserCheck, AlertCircle } from "lucide-react";
-import DashboardCard from "./DashboardCard";
-import ProgressView from "./ProgressView";
-import PlanView from "./PlanView";
-import PendingInvites from "./PendingInvites";
-import { inviteService, PatientRelationship } from "../../services/inviteService";
+import DashboardCard from "../nutritionist/components/DashboardCard";
+import ProgressView from "./components/ProgressView";
+import PlanView from "./components/PlanView";
+import PendingInvites from "../nutritionist/modals/PendingInvites";
+import { inviteService, PatientRelationship } from "@/app/services/inviteService";
 
 type PatientView = 'appointments' | 'plan' | 'progress' | 'diary';
 

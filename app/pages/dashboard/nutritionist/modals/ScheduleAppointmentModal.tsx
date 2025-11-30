@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { X, Calendar, Clock, FileText } from 'lucide-react';
-import { Patient } from './types';
+import { Patient } from '../../shared/types';
 
 interface ScheduleAppointmentModalProps {
     isOpen: boolean;

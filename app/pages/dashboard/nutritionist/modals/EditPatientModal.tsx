@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { X, Search, Link as LinkIcon, AlertCircle } from 'lucide-react';
-import { Patient } from './types';
+import { Patient } from '../../shared/types';
 
 interface EditPatientModalProps {
     patient: Patient;

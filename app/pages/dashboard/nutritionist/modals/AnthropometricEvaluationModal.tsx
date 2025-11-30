@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { X, Scale, Ruler, Activity } from 'lucide-react';
-import { Patient } from './types';
+import { Patient } from '../../shared/types';
 
 interface AnthropometricEvaluationModalProps {
     isOpen: boolean;

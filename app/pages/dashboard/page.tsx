@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Breadcrumb from "@/app/components/breadcrumb";
 import Banner from "../../img/banner-dashboard.jpg";
-import NutritionistDashboard from "./NutritionistDashboard";
-import PatientDashboard from "./PatientDashboard";
+import NutritionistDashboard from "./nutritionist/NutritionistDashboard";
+import PatientDashboard from "./patient/PatientDashboard";
 
 export default function DashboardPage() {
     const { user, isAuthenticated, isLoading } = useAuth();

@@ -1,7 +1,7 @@
 'use client';
 
 import { X, Utensils, Plus, Minus, Calculator } from 'lucide-react';
-import { Patient } from './types';
+import { Patient } from '../../shared/types';
 import { useState } from 'react';
 
 interface CreatePlanModalProps {

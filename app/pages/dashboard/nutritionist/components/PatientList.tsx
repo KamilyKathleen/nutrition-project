@@ -1,4 +1,4 @@
-import { Patient } from "./types";
+import { Patient } from "../../shared/types";
 import { Search, Eye, Edit, Clock, AlertCircle } from "lucide-react";
 
 interface PatientListProps {

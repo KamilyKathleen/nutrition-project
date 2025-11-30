@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { X, Calendar, Weight, Ruler, Activity, FileText, Utensils, TrendingUp } from 'lucide-react';
-import { PatientHistory, DashboardPatient, NutritionalAssessment, DietPlan } from './types';
+import { PatientHistory, DashboardPatient, NutritionalAssessment, DietPlan } from '../../shared/types';
 
 interface PatientHistoryModalProps {
     patient: DashboardPatient | null;
