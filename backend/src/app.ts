@@ -26,8 +26,8 @@ import { connectToDatabase } from './config/database';
 
 const app = express();
 
-// Conectar ao MongoDB
-connectToDatabase();
+// Conectar ao MongoDB com singleton pattern (serverless-friendly)
+connectToDatabase().catch(err => console.error('Erro inicial de conexão:', err));
 
 // Middlewares de segurança
 app.use(helmet());
@@ -62,6 +62,36 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     environment: config.NODE_ENV 
   });
+});
+
+// Database connection test
+app.get('/health/db', async (req, res) => {
+  try {
+    const mongoose = require('mongoose');
+    
+    if (mongoose.connection.readyState === 1) {
+      res.json({
+        status: 'OK',
+        database: 'connected',
+        dbState: 'connected',
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      res.status(503).json({
+        status: 'ERROR',
+        database: 'disconnected',
+        dbState: mongoose.connection.readyState,
+        timestamp: new Date().toISOString()
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      database: 'error',
+      message: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 // API Routes

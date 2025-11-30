@@ -5,7 +5,7 @@
     "lib": ["ES2020"],
     "types": ["jest", "node"],
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": ".",
     "baseUrl": "./src",
     "strict": true,
     "esModuleInterop": true,
@@ -41,10 +41,13 @@
   },
   "include": [
     "src/**/*",
-    "tests/**/*"
+    "api/**/*"
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    "tests",
+    "**/*.test.ts",
+    "**/*.spec.ts"
   ]
 }

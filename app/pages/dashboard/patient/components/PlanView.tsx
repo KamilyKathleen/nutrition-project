@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Utensils, Calendar, Target, AlertCircle, Clock } from 'lucide-react';
-import { dietPlanService, DietPlan } from '../../services/dietPlanService';
+import { dietPlanService, DietPlan } from '@/app/services/dietPlanService';
 
 export default function PlanView() {
     const [activePlan, setActivePlan] = useState<DietPlan | null>(null);

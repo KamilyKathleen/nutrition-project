@@ -1,28 +1,21 @@
 {
   "version": 2,
-  "framework": null,
-  "functions": {
-    "api/**/*.ts": {
-      "maxDuration": 60
-    }
-  },
-  "headers": [
+  "builds": [
     {
-      "source": "/api/(.*)",
-      "headers": [
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        },
-        {
-          "key": "Access-Control-Allow-Methods", 
-          "value": "GET, POST, PUT, DELETE, OPTIONS"
-        },
-        {
-          "key": "Access-Control-Allow-Headers",
-          "value": "Content-Type, Authorization"
-        }
-      ]
+      "src": "api/index.ts",
+      "use": "@vercel/node",
+      "config": {
+        "maxDuration": 60
+      }
     }
-  ]
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "api/index.ts"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
 }

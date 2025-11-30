@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { Mail, Clock, X, Check, AlertCircle } from "lucide-react";
-import { inviteService, PendingInvite } from "../../services/inviteService";
+import { inviteService, PendingInvite } from "@/app/services/inviteService";
 
 interface PendingInvitesProps {
-  onInviteAccepted?: () => void;
+  readonly onInviteAccepted?: () => void;
 }
 
-export default function PendingInvites({ onInviteAccepted }: PendingInvitesProps) {
+export default function PendingInvites({ onInviteAccepted }: Readonly<PendingInvitesProps>) {
   const [invites, setInvites] = useState<PendingInvite[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingInvite, setProcessingInvite] = useState<string | null>(null);
