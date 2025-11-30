@@ -26,8 +26,19 @@ import { connectToDatabase } from './config/database';
 
 const app = express();
 
-// Conectar ao MongoDB com singleton pattern (serverless-friendly)
-connectToDatabase().catch(err => console.error('Erro inicial de conexão:', err));
+// Middleware para garantir conexão com MongoDB antes de processar requests
+app.use(async (req, res, next) => {
+  try {
+    await connectToDatabase();
+    next();
+  } catch (error) {
+    console.error('❌ Erro ao conectar ao MongoDB no middleware:', error);
+    res.status(503).json({ 
+      success: false, 
+      message: 'Serviço temporariamente indisponível - erro de conexão com banco de dados' 
+    });
+  }
+});
 
 // Middlewares de segurança
 app.use(helmet());
@@ -61,6 +72,19 @@ app.get('/health', (req, res) => {
     status: 'OK', 
     timestamp: new Date().toISOString(),
     environment: config.NODE_ENV 
+  });
+});
+
+// Environment check (debug)
+app.get('/health/env', (req, res) => {
+  const mongoUri = config.MONGODB_URI || '';
+  const maskedUri = mongoUri.replace(/\/\/([^:]+):([^@]+)@/, '//$1:****@');
+  
+  res.json({
+    mongoUri: maskedUri,
+    hasMongoUri: !!config.MONGODB_URI,
+    nodeEnv: config.NODE_ENV,
+    timestamp: new Date().toISOString()
   });
 });
 

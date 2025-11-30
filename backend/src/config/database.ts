@@ -20,14 +20,23 @@ export const connectToDatabase = async (): Promise<mongoose.Mongoose> => {
     
     const opts = {
       maxPoolSize: 10,
-      serverSelectionTimeoutMS: 5000,
+      minPoolSize: 2,
+      serverSelectionTimeoutMS: 30000, // 30 segundos
       socketTimeoutMS: 45000,
+      connectTimeoutMS: 30000,
+      heartbeatFrequencyMS: 10000,
+      retryWrites: true,
+      retryReads: true,
       bufferCommands: false,
     };
 
     cached.promise = mongoose.connect(mongoUri, opts).then((mongooseInstance) => {
       console.log('✅ MongoDB conectado com sucesso');
       return mongooseInstance;
+    }).catch((error) => {
+      console.error('❌ Erro na promise de conexão:', error);
+      cached.promise = null;
+      throw error;
     });
   }
 
