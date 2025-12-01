@@ -42,6 +42,55 @@ export class DietPlanController {
   };
 
   /**
+   * 📋 PACIENTE VER SEUS PRÓPRIOS PLANOS (v2)
+   */
+  getMyPlans = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    try {
+      const userId = req.user!.userId;
+      const userEmail = req.user!.email;
+      
+      console.log('🔍 [V2] Buscando planos para:', { userId, userEmail });
+      
+      // Buscar patientId pelo userId primeiro, depois por email
+      let patient = await DietPlanService.findPatientByUserId(userId);
+      
+      if (!patient) {
+        console.log('🔍 Não encontrado por userId, tentando por email...');
+        patient = await DietPlanService.findPatientByEmail(userEmail);
+      }
+      
+      if (!patient) {
+        console.log('❌ Paciente não encontrado');
+        res.status(404).json({
+          success: false,
+          message: 'Paciente não encontrado'
+        });
+        return;
+      }
+
+      console.log('✅ Paciente encontrado:', patient._id);
+      console.log('✅ NutritionistId do paciente:', patient.nutritionistId);
+      
+      // Buscar planos do paciente através do serviço
+      const patientPlans = await DietPlanService.getPatientPlans(patient._id.toString());
+      
+      console.log('✅ Planos encontrados do paciente:', patientPlans.length);
+
+      res.json({
+        success: true,
+        message: 'Planos dietéticos listados com sucesso',
+        data: patientPlans
+      });
+    } catch (error: any) {
+      console.error('🔥 Erro ao buscar planos do paciente:', error);
+      res.status(error.statusCode || 500).json({
+        success: false,
+        message: error.message || 'Erro ao buscar planos dietéticos'
+      });
+    }
+  };
+
+  /**
    * 📋 LISTAR PLANOS DO NUTRICIONISTA
    */
   getDietPlansByNutritionist = async (req: AuthenticatedRequest, res: Response): Promise<void> => {

@@ -163,6 +163,89 @@ export class DietPlanService {
   }
 
   /**
+   * 👤 BUSCAR PACIENTE POR USER ID
+   */
+  async findPatientByUserId(userId: string) {
+    try {
+      console.log('🔍 Buscando paciente com userId:', userId);
+      const patient = await PatientModel.findOne({ 
+        userId: new mongoose.Types.ObjectId(userId) 
+      }).lean();
+      console.log('🔍 Paciente encontrado:', patient ? patient._id : 'não encontrado');
+      return patient;
+    } catch (error) {
+      console.error('🔥 Erro ao buscar paciente:', error);
+      throw new AppError('Erro ao buscar paciente', 500);
+    }
+  }
+
+  /**
+   * 📧 BUSCAR PACIENTE POR EMAIL
+   */
+  async findPatientByEmail(email: string) {
+    try {
+      console.log('🔍 Buscando paciente com email:', email);
+      const patient = await PatientModel.findOne({ email }).lean();
+      console.log('🔍 Paciente encontrado:', patient ? patient._id : 'não encontrado');
+      return patient;
+    } catch (error) {
+      console.error('🔥 Erro ao buscar paciente por email:', error);
+      throw new AppError('Erro ao buscar paciente', 500);
+    }
+  }
+
+  /**
+   * 📋 BUSCAR PLANOS DE UM PACIENTE ESPECÍFICO
+   */
+  async getPatientPlans(patientId: string): Promise<DietPlan[]> {
+    try {
+      console.log('🔍 Buscando planos para patientId:', patientId);
+      
+      const plans = await DietPlanModel
+        .find({ patientId: new mongoose.Types.ObjectId(patientId) })
+        .sort({ createdAt: -1 })
+        .lean();
+
+      console.log('✅ Planos encontrados:', plans.length);
+      return plans.map(plan => this.mapToResponse(plan));
+    } catch (error) {
+      console.error('🔥 Erro ao buscar planos do paciente:', error);
+      throw new AppError('Erro ao buscar planos do paciente', 500);
+    }
+  }
+
+  /**
+   * 📋 LISTAR TODOS OS PLANOS DE UM PACIENTE (SEM FILTRO DE NUTRICIONISTA)
+   */
+  async findByPatientIdSimple(patientId: string): Promise<DietPlan[]> {
+    try {
+      console.log('🔍 Buscando planos para patientId:', patientId);
+      
+      // Buscar todos os planos para debug
+      const allPlans = await DietPlanModel.find({}).lean();
+      console.log('🔍 Total de planos no banco:', allPlans.length);
+      if (allPlans.length > 0) {
+        console.log('🔍 Primeiro plano exemplo:', {
+          _id: allPlans[0]._id,
+          patientId: allPlans[0].patientId,
+          title: allPlans[0].title
+        });
+      }
+      
+      const plans = await DietPlanModel
+        .find({ patientId: new mongoose.Types.ObjectId(patientId) })
+        .sort({ createdAt: -1 })
+        .lean();
+
+      console.log('🔍 Planos encontrados:', plans.length);
+      return plans.map(plan => this.mapToResponse(plan));
+    } catch (error) {
+      console.error('🔥 Erro ao listar planos do paciente:', error);
+      throw new AppError('Erro ao listar planos do paciente', 500);
+    }
+  }
+
+  /**
    * 📋 LISTAR PLANOS POR PACIENTE
    */
   async findByPatientId(
@@ -174,22 +257,27 @@ export class DietPlanService {
     try {
       const skip = (page - 1) * limit;
       
+      console.log('🔍 findByPatientId chamado com:', { patientId, nutritionistId, page, limit });
+      
+      const query = { 
+        patientId: new mongoose.Types.ObjectId(patientId),
+        nutritionistId: new mongoose.Types.ObjectId(nutritionistId)
+      };
+      
+      console.log('🔍 Query MongoDB:', JSON.stringify(query));
+      
       const [plans, total] = await Promise.all([
         DietPlanModel
-          .find({ 
-            patientId: new mongoose.Types.ObjectId(patientId),
-            nutritionistId: new mongoose.Types.ObjectId(nutritionistId)
-          })
+          .find(query)
           .sort({ createdAt: -1 })
           .skip(skip)
           .limit(limit)
           .lean(),
         DietPlanModel
-          .countDocuments({ 
-            patientId: new mongoose.Types.ObjectId(patientId),
-            nutritionistId: new mongoose.Types.ObjectId(nutritionistId)
-          })
+          .countDocuments(query)
       ]);
+
+      console.log('🔍 Planos encontrados por patientId+nutritionistId:', plans.length);
 
       return {
         plans: plans.map(plan => this.mapToResponse(plan)),
