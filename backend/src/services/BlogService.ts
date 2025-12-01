@@ -78,9 +78,15 @@ class BlogService {
       console.log('📝 [BlogService.createPost] postData:', JSON.stringify(postData, null, 2));
       console.log('📝 [BlogService.createPost] authorId:', authorId);
       
+      // Se o status for 'published', setar publishedAt
+      const postWithPublishedAt = {
+        ...postData,
+        publishedAt: postData.status === 'published' ? new Date() : undefined
+      };
+      
       // Criar post (slug será gerado automaticamente pelo middleware)
       const post = new Blog({
-        ...postData,
+        ...postWithPublishedAt,
         author: authorId,
         auditInfo: {
           createdBy: authorId,
@@ -94,6 +100,8 @@ class BlogService {
       console.log('📝 [BlogService.createPost] Post object criado, salvando...');
       await post.save();
       console.log('✅ [BlogService.createPost] Post salvo com sucesso! ID:', post._id);
+      console.log('📅 publishedAt:', post.publishedAt);
+
 
       // Log de auditoria (temporariamente comentado)
       // // await logAudit(
@@ -328,12 +336,20 @@ class BlogService {
    */
   async getRecentPublishedPosts(limit = 10): Promise<IBlog[]> {
     try {
-      return await Blog.findPublished()
+      console.log('📚 [BlogService.getRecentPublishedPosts] Buscando posts recentes...');
+      console.log('📊 Limit:', limit);
+      
+      const posts = await Blog.findPublished()
         .populate('author', 'name email profileImage')
         .limit(limit)
         .exec();
 
-    } catch (error) {
+      console.log('✅ Posts encontrados:', posts.length);
+      console.log('📋 Posts:', posts.map(p => ({ title: p.title, publishedAt: p.publishedAt, status: p.status })));
+
+      return posts;
+    } catch (error: any) {
+      console.error('❌ [BlogService.getRecentPublishedPosts] Erro:', error);
       throw new AppError('Erro ao buscar posts recentes', 500);
     }
   }

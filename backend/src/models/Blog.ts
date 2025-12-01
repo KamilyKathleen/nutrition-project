@@ -117,15 +117,7 @@ const blogSchema = new Schema<IBlog>({
   author: {
     type: Schema.Types.ObjectId,
     ref: 'User',
-    required: [true, 'Autor é obrigatório'],
-    validate: {
-      validator: async function(v: mongoose.Types.ObjectId) {
-        const User = mongoose.model('User');
-        const user = await User.findById(v);
-        return user && user.role === 'nutritionist';
-      },
-      message: 'Apenas nutricionistas podem criar postagens'
-    }
+    required: [true, 'Autor é obrigatório']
   },
   
   views: {
