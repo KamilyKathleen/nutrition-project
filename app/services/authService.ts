@@ -44,7 +44,6 @@ export class AuthService {
     // Login do usuário (agora usa Firebase + JWT)
     static async login(credentials: LoginRequest): Promise<LoginResponse> {
         try {
-            console.log('� AuthService: Usando sistema híbrido para login');
             
             // Usar sistema híbrido (Firebase + JWT)
             const response = await this.hybridService.login(credentials);
@@ -61,14 +60,12 @@ export class AuthService {
             localStorage.setItem('authToken', loginData.token);
             localStorage.setItem('nutriplan_user', JSON.stringify(loginData.user));
             
-            console.log('✅ AuthService: Login híbrido concluído:', loginData);
             return loginData;
             
         } catch (error: any) {
             console.error('❌ AuthService: Erro no login híbrido:', error);
             
-            // Fallback para sistema antigo se houver erro
-            console.log('🔄 AuthService: Tentando sistema antigo como fallback...');
+ 
             try {
                 const response = await apiClient.post<any>('/auth/login', credentials);
                 
@@ -79,13 +76,11 @@ export class AuthService {
                 
                 localStorage.setItem('authToken', loginData.token);
                 localStorage.setItem('nutriplan_user', JSON.stringify(loginData.user));
-                
-                console.log('✅ AuthService: Login antigo concluído:', loginData);
+
                 return loginData;
                 
             } catch (fallbackError) {
-                console.error('❌ AuthService: Ambos sistemas falharam');
-                throw error; // Lançar erro original
+                throw error; 
             }
         }
     }
@@ -93,7 +88,6 @@ export class AuthService {
     // Registro de usuário (agora usa Firebase + JWT)
     static async register(userData: RegisterRequest): Promise<RegisterResponse> {
         try {
-            console.log('🔥 AuthService: Usando sistema híbrido para registro');
             
             // Usar sistema híbrido (Firebase + JWT)
             const response = await this.hybridService.register(userData);
@@ -110,14 +104,10 @@ export class AuthService {
             localStorage.setItem('authToken', registerData.token);
             localStorage.setItem('nutriplan_user', JSON.stringify(registerData.user));
             
-            console.log('✅ AuthService: Registro híbrido concluído:', registerData);
             return registerData;
             
         } catch (error: any) {
-            console.error('❌ AuthService: Erro no registro híbrido:', error);
-            
-            // Fallback para sistema antigo se houver erro
-            console.log('🔄 AuthService: Tentando sistema antigo como fallback...');
+        
             try {
                 const response = await apiClient.post<any>('/auth/register', userData);
                 
@@ -132,37 +122,26 @@ export class AuthService {
                 localStorage.setItem('authToken', registerData.token);
                 localStorage.setItem('nutriplan_user', JSON.stringify(registerData.user));
                 
-                console.log('✅ AuthService: Registro antigo concluído:', registerData);
                 return registerData;
                 
             } catch (fallbackError) {
-                console.error('❌ AuthService: Ambos sistemas falharam');
-                throw error; // Lançar erro original
+                throw error; 
             }
         }
     }
 
     // Logout do usuário (agora usa Firebase + limpa JWT)
     static async logout(): Promise<void> {
-        try {
-            console.log('🔥 AuthService: Fazendo logout híbrido...');
-            
-            // Usar sistema híbrido para logout
-            await this.hybridService.logout();
-            
-            console.log('✅ AuthService: Logout híbrido concluído');
-            
+        try {     
+            await this.hybridService.logout();          
         } catch (error) {
-            console.error('❌ AuthService: Erro no logout híbrido:', error);
-            
-            // Fallback: tentar logout antigo
+            console.error('AuthService: Erro no logout híbrido:', error);
             try {
                 await apiClient.post('/auth/logout');
             } catch (fallbackError) {
                 console.error('Erro ao fazer logout no servidor:', fallbackError);
             }
         } finally {
-            // Sempre remover token e dados do usuário do localStorage
             localStorage.removeItem('authToken');
             localStorage.removeItem('nutriplan_user');
         }
@@ -188,7 +167,6 @@ export class AuthService {
             }
         } catch (error) {
             console.error('Erro ao verificar token:', error);
-            // Limpar dados inválidos
             localStorage.removeItem('authToken');
             localStorage.removeItem('nutriplan_user');
         }
@@ -196,19 +174,14 @@ export class AuthService {
         return null;
     }
 
-    // 🔥 NOVO: Recuperação de senha via Firebase
     static async resetPassword(email: string): Promise<void> {
         try {
-            console.log('🔥 AuthService: Enviando email de recuperação...');
             await this.hybridService.resetPassword(email);
-            console.log('✅ AuthService: Email de recuperação enviado');
         } catch (error: any) {
-            console.error('❌ AuthService: Erro na recuperação de senha:', error);
             throw new Error('Erro ao enviar email de recuperação');
         }
     }
 
-    // Obter token do localStorage
     static getToken(): string | null {
         return localStorage.getItem('authToken');
     }

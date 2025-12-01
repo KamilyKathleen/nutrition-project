@@ -9,6 +9,7 @@ import { PatientModel } from '../models/Patient';
 import { AppError } from '../middlewares/errorHandler';
 import { DietPlan } from '../types';
 import mongoose from 'mongoose';
+import PDFDocument from 'pdfkit';
 
 export interface CreateDietPlanRequest {
   patientId: string;
@@ -211,6 +212,105 @@ export class DietPlanService {
     } catch (error) {
       console.error('🔥 Erro ao buscar planos do paciente:', error);
       throw new AppError('Erro ao buscar planos do paciente', 500);
+    }
+  }
+
+  /**
+   * 📄 GERAR PDF DO PLANO ATIVO
+   */
+  async generateActivePlanPDF(patientId: string): Promise<Buffer> {
+    try {
+      console.log('📥 Gerando PDF para patientId:', patientId);
+      
+      // Buscar plano ativo
+      const plan = await DietPlanModel
+        .findOne({ 
+          patientId: new mongoose.Types.ObjectId(patientId),
+          isActive: true 
+        })
+        .populate('patientId')
+        .lean();
+
+      if (!plan) {
+        throw new AppError('Nenhum plano ativo encontrado', 404);
+      }
+
+      // Criar documento PDF
+      const doc = new PDFDocument({ margin: 50 });
+      const chunks: Buffer[] = [];
+
+      // Coletar chunks do PDF
+      doc.on('data', (chunk) => chunks.push(chunk));
+
+      // Cabeçalho
+      doc.fontSize(20).text('Plano Alimentar', { align: 'center' });
+      doc.moveDown();
+      doc.fontSize(16).text(plan.title, { align: 'center' });
+      doc.moveDown();
+
+      // Informações do plano
+      doc.fontSize(12);
+      if (plan.description) {
+        doc.text(`Descrição: ${plan.description}`);
+        doc.moveDown();
+      }
+
+      doc.text(`Período: ${new Date(plan.startDate).toLocaleDateString('pt-BR')} até ${plan.endDate ? new Date(plan.endDate).toLocaleDateString('pt-BR') : 'Indeterminado'}`);
+      doc.moveDown();
+
+      // Metas nutricionais
+      doc.fontSize(14).text('Metas Nutricionais Diárias', { underline: true });
+      doc.moveDown(0.5);
+      doc.fontSize(12);
+      doc.text(`Calorias: ${plan.targetCalories} kcal`);
+      doc.text(`Proteínas: ${plan.targetProteins}g`);
+      doc.text(`Carboidratos: ${plan.targetCarbohydrates}g`);
+      doc.text(`Gorduras: ${plan.targetFats}g`);
+      doc.moveDown();
+
+      // Refeições
+      doc.fontSize(14).text('Refeições', { underline: true });
+      doc.moveDown(0.5);
+
+      const mealNames: Record<string, string> = {
+        breakfast: '☀️ Café da Manhã',
+        morning_snack: '🥤 Lanche da Manhã',
+        lunch: '🍽️ Almoço',
+        afternoon_snack: '☕ Lanche da Tarde',
+        dinner: '🌙 Jantar',
+        evening_snack: '🌃 Ceia'
+      };
+
+      plan.meals.forEach((meal: any) => {
+        doc.fontSize(13).text(`\n${mealNames[meal.type] || meal.type} - ${meal.time}`, { bold: true });
+        doc.fontSize(11);
+        
+        meal.foods.forEach((food: any) => {
+          doc.text(`  • ${food.name}: ${food.quantity}${food.unit}${food.calories ? ` (${food.calories} kcal)` : ''}`);
+        });
+
+        if (meal.instructions) {
+          doc.fontSize(10).text(`  Obs: ${meal.instructions}`, { italics: true });
+        }
+      });
+
+      // Rodapé
+      doc.moveDown(2);
+      doc.fontSize(10).text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, { align: 'center' });
+
+      // Finalizar documento
+      doc.end();
+
+      // Retornar buffer quando terminar
+      return new Promise((resolve, reject) => {
+        doc.on('end', () => {
+          resolve(Buffer.concat(chunks));
+        });
+        doc.on('error', reject);
+      });
+    } catch (error) {
+      console.error('🔥 Erro ao gerar PDF:', error);
+      throw error instanceof AppError ? error : new AppError('Erro ao gerar PDF', 500);
     }
   }
 

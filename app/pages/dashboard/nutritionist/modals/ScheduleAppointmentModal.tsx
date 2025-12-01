@@ -31,7 +31,7 @@ export default function ScheduleAppointmentModal({ isOpen, onClose, patient }: S
         try {
             const token = localStorage.getItem('authToken');
             
-            const response = await fetch('http://localhost:8000/api/consultations', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/consultations`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -295,14 +295,6 @@ export default function ReadView() {
                                         Ver
                                     </button>
                                     <button
-                                        onClick={() => alert('Função de editar em desenvolvimento')}
-                                        className="flex-1 border-2 border-mintGreen text-petroleumGreen hover:bg-mintGreen hover:text-white px-3 py-2 rounded-md flex items-center justify-center gap-2 transition-colors text-sm font-semibold"
-                                        title="Editar post"
-                                    >
-                                        <Edit className="h-4 w-4" />
-                                        Editar
-                                    </button>
-                                    <button
                                         onClick={() => post._id && handleDelete(post._id)}
                                         className="flex-1 border-2 border-red-400 text-red-600 hover:bg-red-500 hover:text-white px-3 py-2 rounded-md flex items-center justify-center gap-2 transition-colors text-sm font-semibold"
                                         title="Excluir post"

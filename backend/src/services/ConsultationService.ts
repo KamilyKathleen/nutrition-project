@@ -269,6 +269,7 @@ export class ConsultationService {
       recommendations: string;
       followUpInstructions: string;
       nextAppointment: Date;
+      actualDate: Date;
       prescriptions: Array<{
         type: 'diet' | 'supplement' | 'exercise' | 'other';
         description: string;
@@ -278,47 +279,47 @@ export class ConsultationService {
     }>
   ): Promise<Consultation> {
     try {
+      console.log('🔧 [ConsultationService.update] Iniciando...');
+      console.log('📋 ID:', id);
+      console.log('👨‍⚕️ NutritionistId:', nutritionistId);
+      console.log('📦 Data:', JSON.stringify(data, null, 2));
+
       // Validações específicas
       if (data.scheduledDate && data.scheduledDate <= new Date()) {
+        console.error('❌ Validação falhou: Nova data deve ser no futuro');
         throw new AppError('Nova data deve ser no futuro', 400);
       }
 
-      if (data.status === 'completed' && !data.observations) {
-        throw new AppError('Observações são obrigatórias para finalizar consulta', 400);
-      }
+      // REMOVIDO: Validação de observations e recommendations obrigatórios para status completed
+      // Agora permite marcar como realizada sem essas informações
 
-      if (data.status === 'completed' && !data.recommendations) {
-        throw new AppError('Recomendações são obrigatórias para finalizar consulta', 400);
-      }
-
-      const updateData: any = { ...data };
-      
-      // Se está completando a consulta, definir data real
-      if (data.status === 'completed' && !updateData.actualDate) {
-        updateData.actualDate = new Date();
-      }
-
-      const consultation = await ConsultationModel
-        .findOneAndUpdate(
-          {
-            _id: new mongoose.Types.ObjectId(id),
-            nutritionistId: new mongoose.Types.ObjectId(nutritionistId)
-          },
-          updateData,
-          { new: true, runValidators: true }
-        )
-        .populate('patientId', 'name email phone');
+      console.log('🔍 Buscando consulta no banco...');
+      const consultation = await ConsultationModel.findOne({
+        _id: new mongoose.Types.ObjectId(id),
+        nutritionistId: new mongoose.Types.ObjectId(nutritionistId)
+      });
 
       if (!consultation) {
+        console.error('❌ Consulta não encontrada ou não pertence ao nutricionista');
         throw new AppError('Consulta não encontrada', 404);
       }
 
+      console.log('✅ Consulta encontrada:', consultation._id);
+      console.log('📊 Status atual:', consultation.status);
+
+      // Atualizar campos
+      Object.assign(consultation, data);
+
+      console.log('💾 Salvando consulta...');
+      await consultation.save();
+      console.log('✅ Consulta salva com sucesso');
+
       return this.mapToInterface(consultation);
     } catch (error: any) {
-      if (error instanceof AppError) {
-        throw error;
-      }
-      throw new AppError('Erro ao atualizar consulta: ' + error.message, 500);
+      console.error('🔥 ERRO em ConsultationService.update:', error);
+      console.error('📊 Stack:', error.stack);
+      if (error instanceof AppError) throw error;
+      throw new AppError('Erro ao atualizar consulta', 500);
     }
   }
 
@@ -540,6 +541,35 @@ export class ConsultationService {
       updatedAt: doc.updatedAt
     };
   }
+
+  /**
+   * 📅 BUSCAR CONSULTAS FUTURAS DO PACIENTE (SEM FILTRO DE NUTRICIONISTA)
+   */
+  async findUpcomingByPatientId(patientId: string): Promise<Consultation[]> {
+    try {
+      const now = new Date();
+      
+      console.log('🔍 Buscando consultas futuras para patientId:', patientId, 'após:', now);
+      
+      const consultations = await ConsultationModel
+        .find({
+          patientId: new mongoose.Types.ObjectId(patientId),
+          scheduledDate: { $gte: now },
+          status: 'scheduled'
+        })
+        .sort({ scheduledDate: 1 })
+        .limit(10)
+        .lean();
+
+      console.log('✅ Consultas encontradas no banco:', consultations.length);
+
+      return consultations.map(this.mapToInterface);
+    } catch (error: any) {
+      console.error('🔥 Erro ao buscar consultas futuras:', error);
+      throw new AppError('Erro ao buscar consultas futuras do paciente', 500);
+    }
+  }
 }
 
 export default new ConsultationService();
+

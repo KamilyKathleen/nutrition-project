@@ -1,6 +1,10 @@
 // Configuração base da API
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
+// Exportar a URL base para uso em outros lugares
+export const getApiBaseUrl = () => API_BASE_URL;
+export const getApiUrl = (endpoint: string) => `${API_BASE_URL}${endpoint}`;
+
 // Configuração do fetch com interceptors
 class ApiClient {
     private baseURL: string;
@@ -27,26 +31,14 @@ class ApiClient {
         // Adicionar token de autenticação se existir
         const token = localStorage.getItem('authToken');
         
-        // 🔍 DEBUG: Log detalhado de autenticação
-        console.log('🔍 [API Debug]', {
-            endpoint,
-            method: options.method || 'GET',
-            hasToken: !!token,
-            tokenPreview: token ? `${token.substring(0, 20)}...` : 'none',
-            localStorage: {
-                authToken: !!localStorage.getItem('authToken'),
-                user: !!localStorage.getItem('nutriplan_user')
-            }
-        });
         
         if (token) {
             config.headers = {
                 ...config.headers,
                 'Authorization': `Bearer ${token}`,
             };
-            console.log('✅ Token adicionado ao header Authorization');
         } else {
-            console.warn('⚠️ Nenhum token encontrado no localStorage!');
+            console.warn('Nenhum token encontrado no localStorage!');
         }
 
         try {
@@ -54,7 +46,7 @@ class ApiClient {
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                console.error('❌ API Error Response:', {
+                console.error('API Error Response:', {
                     status: response.status,
                     statusText: response.statusText,
                     errorData,
@@ -81,7 +73,7 @@ class ApiClient {
     }
 
     async post<T>(endpoint: string, data?: unknown): Promise<T> {
-        console.log('📤 [API.post] Enviando POST:', {
+        console.log('[API.post] Enviando POST:', {
             endpoint,
             data,
             dataStringified: data ? JSON.stringify(data).substring(0, 200) + '...' : 'undefined'

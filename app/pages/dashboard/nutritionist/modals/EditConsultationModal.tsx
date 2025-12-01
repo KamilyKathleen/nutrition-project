@@ -56,7 +56,7 @@ export default function EditConsultationModal({ isOpen, onClose, consultation, o
             // Combinar data e hora
             const scheduledDateTime = new Date(`${date}T${time}`);
 
-            const response = await fetch(`http://localhost:8000/api/consultations/${consultation.id}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/consultations/${consultation.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -94,7 +94,7 @@ export default function EditConsultationModal({ isOpen, onClose, consultation, o
         try {
             const token = localStorage.getItem('authToken');
             
-            const response = await fetch(`http://localhost:8000/api/consultations/${consultation.id}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/consultations/${consultation.id}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -112,6 +112,42 @@ export default function EditConsultationModal({ isOpen, onClose, consultation, o
             }
         } catch (err) {
             setError('Erro ao conectar com o servidor');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleMarkAsCompleted = async () => {
+        if (!consultation) return;
+        
+        setError('');
+        setLoading(true);
+
+        try {
+            const token = localStorage.getItem('authToken');
+            
+            const url = `${process.env.NEXT_PUBLIC_API_URL}/consultations/${consultation.id}/mark-completed`;
+            
+            const response = await fetch(url, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+
+            if (response.ok) {
+                const data = await response.json();
+                onUpdate();
+                onClose();
+                resetForm();
+            } else {
+                const data = await response.json();
+                setError(data.message || 'Erro ao marcar consulta como realizada');
+            }
+        } catch (err: any) {
+            setError('Erro ao conectar com o servidor: ' + err.message);
         } finally {
             setLoading(false);
         }
@@ -289,6 +325,20 @@ export default function EditConsultationModal({ isOpen, onClose, consultation, o
                             placeholder="Adicione observações sobre a consulta..."
                         />
                     </div>
+
+                    {/* Mark as Completed Button - Only show if status is scheduled */}
+                    {consultation.status === 'scheduled' && (
+                        <div className="pt-2">
+                            <button
+                                type="button"
+                                onClick={handleMarkAsCompleted}
+                                disabled={loading}
+                                className="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50 font-medium"
+                            >
+                                ✅ Marcar como Realizada
+                            </button>
+                        </div>
+                    )}
 
                     {/* Buttons */}
                     <div className="flex gap-3 pt-4">

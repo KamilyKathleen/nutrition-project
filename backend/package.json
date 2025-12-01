@@ -22,6 +22,7 @@
   "dependencies": {
     "@types/bcrypt": "^6.0.0",
     "@types/bull": "^3.15.9",
+    "@types/pdfkit": "^0.17.4",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^2.4.3",
     "bull": "^4.16.5",
@@ -42,6 +43,7 @@
     "mongoose-paginate-v2": "^1.7.4",
     "morgan": "^1.10.0",
     "multer": "^2.0.2",
+    "pdfkit": "^0.17.2",
     "rate-limiter-flexible": "^4.0.1",
     "redis": "^5.9.0",
     "validator": "^13.11.0"

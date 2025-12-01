@@ -32,6 +32,8 @@ export default function Card({ image, description, title, subtitle, page, button
                     <Image
                         src={image}
                         alt="Card Image"
+                        width={350}
+                        height={230}
                         className="w-full h-[230px] object-cover mb-2 rounded-t-lg"
                     />
                 )

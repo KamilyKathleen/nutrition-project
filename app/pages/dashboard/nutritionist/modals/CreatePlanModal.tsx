@@ -131,7 +131,7 @@ export default function CreatePlanModal({ isOpen, onClose, patient }: CreatePlan
 
         try {
             const token = localStorage.getItem('authToken');
-            const response = await fetch('http://localhost:8000/api/diet-plans', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/diet-plans`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

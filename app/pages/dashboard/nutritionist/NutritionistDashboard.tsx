@@ -33,7 +33,7 @@ export default function NutritionistDashboard() {
         try {
             setLoading(true);
             const token = localStorage.getItem('authToken');
-            const response = await fetch('http://localhost:8000/api/patients', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/patients`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -41,13 +41,12 @@ export default function NutritionistDashboard() {
             
             if (response.ok) {
                 const data = await response.json();
-                console.log('📋 Pacientes carregados:', data.data);
                 setPatients(data.data || []);
             } else {
-                console.error('❌ Erro ao carregar pacientes:', response.status);
+                console.error('Erro ao carregar pacientes:', response.status);
             }
         } catch (error) {
-            console.error('❌ Erro ao buscar pacientes:', error);
+            console.error('Erro ao buscar pacientes:', error);
         } finally {
             setLoading(false);
         }
@@ -55,28 +54,19 @@ export default function NutritionistDashboard() {
 
     // Buscar consultas agendadas (futuras)
     const fetchScheduledAppointments = async () => {
-        console.log('🔵 fetchScheduledAppointments INICIOU');
         try {
-            const token = localStorage.getItem('authToken');
-            console.log('🔑 Token:', token ? 'existe' : 'NÃO EXISTE');
-            
+            const token = localStorage.getItem('authToken');            
             const now = new Date();
-            console.log('📅 Data atual:', now);
             
-            const response = await fetch('http://localhost:8000/api/consultations', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/consultations`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
             });
             
-            console.log('📡 Response status:', response.status);
-            console.log('📡 Response ok:', response.ok);
             
             if (response.ok) {
                 const data = await response.json();
-                console.log('📅 DADOS COMPLETOS da API:', JSON.stringify(data, null, 2));
-                console.log('📅 Consultas carregadas (todas):', data.data);
-                console.log('📅 Número de consultas:', data.data?.length || 0);
                 
                 // Filtrar consultas FUTURAS agendadas (a partir de hoje)
                 const scheduledConsultations = (data.data || []).filter((consultation: any) => {
@@ -84,28 +74,19 @@ export default function NutritionistDashboard() {
                     const isFuture = consultationDate >= now;
                     const isScheduled = consultation.status === 'scheduled' || consultation.status === 'rescheduled';
                     
-                    console.log('Verificando consulta:', {
-                        date: consultation.date,
-                        parsed: consultationDate,
-                        status: consultation.status,
-                        isFuture,
-                        isScheduled,
-                        willInclude: isFuture && isScheduled
-                    });
-                    
                     return isFuture && isScheduled;
                 });
                 
-                console.log('📅 Consultas futuras agendadas:', scheduledConsultations);
-                console.log('📊 Total de consultas agendadas:', scheduledConsultations.length);
+                console.log('Consultas futuras agendadas:', scheduledConsultations);
+                console.log('Total de consultas agendadas:', scheduledConsultations.length);
                 
                 setScheduledAppointments(scheduledConsultations.length);
-                console.log('✅ Estado atualizado! scheduledAppointments =', scheduledConsultations.length);
+                console.log('Estado atualizado! scheduledAppointments =', scheduledConsultations.length);
             } else {
-                console.error('❌ Erro ao carregar consultas:', response.status);
+                console.error('Erro ao carregar consultas:', response.status);
             }
         } catch (error) {
-            console.error('❌ Erro ao buscar consultas:', error);
+            console.error('Erro ao buscar consultas:', error);
         }
     };
 
@@ -117,23 +98,13 @@ export default function NutritionistDashboard() {
     
     const handleAddPatient = (newPatient: Patient) => {
         setPatients(prevPatients => [newPatient, ...prevPatients]);
-        setSelectedPatient(newPatient); // Seleciona o paciente recém-adicionado
+        setSelectedPatient(newPatient); 
     };
 
     // Carregar pacientes ao montar o componente
     useEffect(() => {
         fetchPatients();
         fetchScheduledAppointments();
-    }, []);
-
-    // Auto-refresh a cada 30 segundos
-    useEffect(() => {
-        const interval = setInterval(() => {
-            fetchPatients();
-            fetchScheduledAppointments();
-        }, 30000); // 30 segundos
-
-        return () => clearInterval(interval); // Limpar ao desmontar
     }, []);
 
     const handleSelectPatient = (patient: Patient) => {
@@ -212,7 +183,7 @@ export default function NutritionistDashboard() {
                 isOpen={isScheduleAppointmentModalOpen}
                 onClose={() => {
                     setScheduleAppointmentModalOpen(false);
-                    fetchScheduledAppointments(); // Atualizar contagem
+                    fetchScheduledAppointments(); 
                 }}
                 patient={selectedPatient}
             />
@@ -229,7 +200,10 @@ export default function NutritionistDashboard() {
                 patient={selectedPatient!}
                 isOpen={isEditModalOpen}
                 onClose={() => setEditModalOpen(false)}
-                onUpdate={fetchPatients}
+                onUpdate={() => {
+                    setSelectedPatient(null); 
+                    fetchPatients(); 
+                }}
             />
         </div>
     );

@@ -32,6 +32,14 @@ const validateRequest = (req: any, res: any, next: any) => {
 router.use(authenticate);
 
 /**
+ * ⏰ PACIENTE VER SUAS PRÓXIMAS CONSULTAS
+ */
+router.get('/my-upcoming',
+  authorize(UserRole.PATIENT),
+  ConsultationController.getMyUpcomingConsultations
+);
+
+/**
  * 🎯 VALIDAÇÕES PARA CRIAÇÃO DE CONSULTA
  */
 const createConsultationValidation = [
@@ -280,6 +288,17 @@ router.patch('/:id/cancel',
   validateRequest,
   auditSensitiveAccess('consultation_cancel', 'PATIENT', (req) => req.params.id || ''),
   ConsultationController.cancelConsultation
+);
+
+/**
+ * ✅ Marcar consulta como realizada
+ */
+router.patch('/:id/mark-completed',
+  authorize(UserRole.NUTRITIONIST),
+  [param('id').isMongoId().withMessage('ID da consulta inválido')],
+  validateRequest,
+  auditSensitiveAccess('consultation_mark_completed', 'PATIENT', (req) => req.params.id || ''),
+  ConsultationController.markAsCompleted
 );
 
 /**

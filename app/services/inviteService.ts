@@ -31,7 +31,6 @@ export interface PatientRelationship {
 }
 
 export const inviteService = {
-  // 📋 Buscar convites pendentes
   async getPendingInvites(): Promise<PendingInvite[]> {
     try {
       const response = await apiClient.get<{success: boolean, data: PendingInvite[]}>('/invites/pending');
@@ -42,7 +41,6 @@ export const inviteService = {
     }
   },
 
-  // ✅ Aceitar convite
   async acceptInvite(inviteId: string): Promise<void> {
     try {
       await apiClient.post(`/invites/${inviteId}/accept`);
@@ -52,7 +50,6 @@ export const inviteService = {
     }
   },
 
-  // ❌ Rejeitar convite (implementar no backend se necessário)
   async rejectInvite(inviteId: string): Promise<void> {
     try {
       await apiClient.post(`/invites/${inviteId}/reject`);
@@ -62,19 +59,17 @@ export const inviteService = {
     }
   },
 
-  // 🔗 Verificar se paciente tem nutricionista vinculado
+
   async checkPatientRelationship(): Promise<PatientRelationship | null> {
     try {
-      console.log('🔍 Verificando relacionamento do paciente...');
       const response = await apiClient.get<{success: boolean, data: PatientRelationship}>('/patients/me');
-      console.log('✅ Relacionamento encontrado:', response.data);
       return response.data || null;
     } catch (error: any) {
-      console.error('❌ Erro ao verificar relacionamento:', error);
+      console.error('Erro ao verificar relacionamento:', error);
       
       // Se for erro 404, significa que não tem relacionamento
       if (error?.message?.includes('404') || error?.message?.includes('Nenhum relacionamento encontrado')) {
-        console.log('ℹ️ Paciente não tem relacionamento ainda');
+        console.log('Paciente não tem relacionamento ainda');
         return null;
       }
       

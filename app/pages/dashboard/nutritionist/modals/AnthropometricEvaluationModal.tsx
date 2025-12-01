@@ -83,27 +83,11 @@ export default function AnthropometricEvaluationModal({
         setError(null);
 
         try {
-            // TODO: Integrar com API
-            console.log('📊 Dados da avaliação:', {
-                patientId: patient.id,
-                anthropometricData: {
-                    height: Number(formData.height),
-                    weight: Number(formData.weight),
-                    waistCircumference: formData.waistCircumference ? Number(formData.waistCircumference) : undefined,
-                    hipCircumference: formData.hipCircumference ? Number(formData.hipCircumference) : undefined,
-                    bodyFatPercentage: formData.bodyFatPercentage ? Number(formData.bodyFatPercentage) : undefined,
-                    muscleMass: formData.muscleMass ? Number(formData.muscleMass) : undefined,
-                },
-                observations: formData.observations
-            });
-
-            // Simular sucesso
             await new Promise(resolve => setTimeout(resolve, 1000));
             
             onSuccess();
             onClose();
             
-            // Reset form
             setFormData({
                 height: '',
                 weight: '',

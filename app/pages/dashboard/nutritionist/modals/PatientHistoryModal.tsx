@@ -32,15 +32,13 @@ export default function PatientHistoryModal({ patient, isOpen, onClose }: Patien
             setLoading(true);
             setError(null);
             
-            console.log('🔍 [History Modal] Carregando histórico para paciente:', patient.id);
-            
             const token = localStorage.getItem('authToken');
             if (!token) {
                 throw new Error('Token de autenticação não encontrado');
             }
 
             // Buscar avaliações nutricionais
-            const assessmentsResponse = await fetch(`http://localhost:8000/api/nutritional-assessments/patient/${patient.id}`, {
+            const assessmentsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/nutritional-assessments/patient/${patient.id}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -48,7 +46,7 @@ export default function PatientHistoryModal({ patient, isOpen, onClose }: Patien
             });
 
             // Buscar planos alimentares
-            const plansResponse = await fetch(`http://localhost:8000/api/diet-plans/patient/${patient.id}`, {
+            const plansResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/diet-plans/patient/${patient.id}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -60,12 +58,9 @@ export default function PatientHistoryModal({ patient, isOpen, onClose }: Patien
 
             if (assessmentsResponse.ok) {
                 const assessmentsData = await assessmentsResponse.json();
-                console.log('✅ Avaliações carregadas:', assessmentsData);
-                console.log('📊 Dados brutos:', assessmentsData.data);
                 
                 // Mapear dados da API para o formato do componente
                 assessments = (assessmentsData.data || []).map((item: any) => {
-                    console.log('🔄 Mapeando avaliação:', item);
                     return {
                         id: item._id || item.id,
                         weight: item.anthropometricData?.weight || 0,
@@ -78,21 +73,18 @@ export default function PatientHistoryModal({ patient, isOpen, onClose }: Patien
                         createdAt: item.createdAt
                     };
                 });
-                console.log('✅ Avaliações mapeadas:', assessments);
+                console.log('Avaliações mapeadas:', assessments);
             } else {
-                console.warn('⚠️ Erro ao buscar avaliações:', assessmentsResponse.status);
+                console.warn('Erro ao buscar avaliações:', assessmentsResponse.status);
                 const errorText = await assessmentsResponse.text();
-                console.warn('⚠️ Resposta do erro:', errorText);
+                console.warn('Resposta do erro:', errorText);
             }
 
             if (plansResponse.ok) {
                 const plansData = await plansResponse.json();
-                console.log('✅ Planos alimentares carregados:', plansData);
-                console.log('📊 Dados brutos dos planos:', plansData.data);
                 
                 // Mapear dados da API para o formato do componente
                 dietPlans = (plansData.data || []).map((item: any) => {
-                    console.log('🔄 Mapeando plano:', item);
                     return {
                         id: item._id || item.id,
                         title: item.name || 'Plano Alimentar',
@@ -103,14 +95,11 @@ export default function PatientHistoryModal({ patient, isOpen, onClose }: Patien
                         createdAt: item.createdAt
                     };
                 });
-                console.log('✅ Planos mapeados:', dietPlans);
             } else {
-                console.warn('⚠️ Erro ao buscar planos:', plansResponse.status);
+                console.warn('Erro ao buscar planos:', plansResponse.status);
                 const errorText = await plansResponse.text();
-                console.warn('⚠️ Resposta do erro:', errorText);
+                console.warn('Resposta do erro:', errorText);
             }
-
-            console.log('📋 History final:', { assessments, dietPlans });
             
             setHistory({
                 assessments,
@@ -118,7 +107,7 @@ export default function PatientHistoryModal({ patient, isOpen, onClose }: Patien
             });
             
         } catch (err: any) {
-            console.error('❌ [History Modal] Erro:', err);
+            console.error('[History Modal] Erro:', err);
             setError(err.message || 'Erro ao carregar histórico');
         } finally {
             setLoading(false);
@@ -127,10 +116,9 @@ export default function PatientHistoryModal({ patient, isOpen, onClose }: Patien
 
     const handleViewPlanDetails = async (planId: string) => {
         try {
-            console.log('🔍 Carregando detalhes do plano:', planId);
             const token = localStorage.getItem('authToken');
             
-            const response = await fetch(`http://localhost:8000/api/diet-plans/${planId}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/diet-plans/${planId}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -139,21 +127,16 @@ export default function PatientHistoryModal({ patient, isOpen, onClose }: Patien
 
             if (response.ok) {
                 const data = await response.json();
-                console.log('✅ Resposta completa da API:', data);
-                console.log('📋 Dados do plano:', data.data);
-                console.log('🍽️ Meal plan:', data.data?.mealPlan);
-                console.log('🎯 Goals:', data.data?.nutritionalGoals);
-                console.log('📝 Guidelines:', data.data?.guidelines);
                 setSelectedPlan(data.data);
                 setShowPlanDetails(true);
             } else {
-                console.error('❌ Erro ao buscar detalhes do plano:', response.status);
+                console.error('Erro ao buscar detalhes do plano:', response.status);
                 const errorText = await response.text();
-                console.error('❌ Resposta de erro:', errorText);
+                console.error('Resposta de erro:', errorText);
                 alert('Erro ao carregar detalhes do plano');
             }
         } catch (error) {
-            console.error('❌ Erro:', error);
+            console.error('Erro:', error);
             alert('Erro ao carregar detalhes do plano');
         }
     };
@@ -167,7 +150,7 @@ export default function PatientHistoryModal({ patient, isOpen, onClose }: Patien
     };
 
     const calculateBMI = (weight: number, height: number) => {
-        const heightInMeters = height / 100; // Assumindo altura em cm
+        const heightInMeters = height / 100; 
         const bmi = weight / (heightInMeters * heightInMeters);
         return bmi.toFixed(1);
     };

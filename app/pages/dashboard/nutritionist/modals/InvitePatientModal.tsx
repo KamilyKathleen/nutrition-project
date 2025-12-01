@@ -20,7 +20,7 @@ export default function InvitePatientModal({ isOpen, onClose, onInviteSent }: In
         
         try {
             // Enviar convite via API
-            const response = await fetch('http://localhost:8000/api/patients/invite', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/patients/invite`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

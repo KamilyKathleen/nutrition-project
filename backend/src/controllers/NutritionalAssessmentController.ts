@@ -358,6 +358,10 @@ export class NutritionalAssessmentController {
       });
     }
   };
+
+  /**
+   * 👤 BUSCAR AVALIAÇÕES DO PRÓPRIO PACIENTE
+   */
 }
 
 export default new NutritionalAssessmentController();

@@ -1,9 +1,3 @@
-/**
- * 🍽️ SERVIÇO DE PLANOS DIETÉTICOS - Frontend
- * 
- * Gerenciamento de planos alimentares do paciente
- */
-
 import { apiClient } from './api';
 
 interface Food {
@@ -51,20 +45,13 @@ interface DietPlanResponse {
 
 class DietPlanService {
 
-    /**
-     * 🎯 Buscar plano ativo do paciente (primeiro plano da lista)
-     */
     async getActiveDietPlan(): Promise<DietPlan | null> {
         try {
-            console.log('🔍 [Frontend] Buscando plano ativo...');
             const response = await apiClient.get<DietPlanResponse>('/patient-data/diet-plans');
-            console.log('📋 [Frontend] Planos recebidos:', response.data);
-            
-            // Retornar o primeiro plano ativo (mais recente)
             const activePlans = response.data?.filter(plan => plan.isActive) || [];
             return activePlans.length > 0 ? activePlans[0] : null;
         } catch (error: any) {
-            console.error('❌ [Frontend] Erro ao buscar plano ativo:', error);
+            console.error('[Frontend] Erro ao buscar plano ativo:', error);
             
             // Se for 404, significa que não tem planos
             if (error?.message?.includes('404')) {
@@ -75,20 +62,13 @@ class DietPlanService {
         }
     }
 
-    /**
-     * 📋 Buscar todos os planos do paciente
-     */
     async getAllDietPlans(): Promise<DietPlan[]> {
         try {
-            console.log('🔍 [Frontend] Buscando todos os planos...');
-            const response = await apiClient.get<DietPlanResponse>('/patient-data/diet-plans');
-            console.log('📋 [Frontend] Todos os planos recebidos:', response.data);
-            
+            const response = await apiClient.get<DietPlanResponse>('/patient-data/diet-plans');      
             return response.data || [];
         } catch (error: any) {
-            console.error('❌ [Frontend] Erro ao buscar planos:', error);
+            console.error('[Frontend] Erro ao buscar planos:', error);
             
-            // Se for 404, retornar array vazio
             if (error?.message?.includes('404')) {
                 return [];
             }

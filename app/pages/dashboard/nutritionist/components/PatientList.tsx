@@ -1,5 +1,5 @@
 import { Patient } from "../../shared/types";
-import { Search, Eye, Edit, Clock, AlertCircle } from "lucide-react";
+import { Search, Eye, Edit } from "lucide-react";
 
 interface PatientListProps {
     readonly patients: Patient[];
@@ -10,75 +10,6 @@ interface PatientListProps {
     readonly onViewHistory: (patient: Patient) => void;
     readonly onEditPatient: (patient: Patient) => void;
 }
-
-// Constantes para controle de expiração de convites
-const INVITE_EXPIRATION_DAYS = 7;
-const INVITE_URGENT_THRESHOLD_DAYS = 2;
-
-// Função para calcular dias restantes até a expiração
-const getDaysUntilExpiration = (inviteDate: string): number => {
-    const invite = new Date(inviteDate);
-    const expiration = new Date(invite.getTime() + INVITE_EXPIRATION_DAYS * 24 * 60 * 60 * 1000);
-    const now = new Date();
-    const daysLeft = Math.ceil((expiration.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
-    return daysLeft;
-};
-
-// Função para obter informações de status do paciente
-const getPatientStatusInfo = (patient: Patient) => {
-    // Se paciente tem userId, está vinculado a uma conta
-    if (patient.userId) {
-        return {
-            label: 'Vinculado',
-            color: 'bg-green-100 text-green-800',
-            icon: null,
-            showExpiration: false,
-            daysLeft: 0
-        };
-    }
-    
-    // Se existe data de convite, verificar status
-    if (patient.inviteDate) {
-        const daysLeft = getDaysUntilExpiration(patient.inviteDate);
-        
-        if (daysLeft <= 0) {
-            return {
-                label: 'Convite Expirado',
-                color: 'bg-red-100 text-red-800',
-                icon: <AlertCircle size={14} className="inline mr-1" />,
-                showExpiration: false,
-                daysLeft: 0
-            };
-        }
-        
-        if (daysLeft <= INVITE_URGENT_THRESHOLD_DAYS) {
-            return {
-                label: 'Convite Pendente',
-                color: 'bg-yellow-100 text-yellow-800',
-                icon: <Clock size={14} className="inline mr-1 animate-pulse" />,
-                showExpiration: true,
-                daysLeft
-            };
-        }
-        
-        return {
-            label: 'Convite Pendente',
-            color: 'bg-blue-100 text-blue-800',
-            icon: <Clock size={14} className="inline mr-1" />,
-            showExpiration: true,
-            daysLeft
-        };
-    }
-    
-    // Paciente não vinculado sem convite
-    return {
-        label: 'Não Vinculado',
-        color: 'bg-gray-100 text-gray-800',
-        icon: null,
-        showExpiration: false,
-        daysLeft: 0
-    };
-};
 
 export default function PatientList({ patients, searchTerm, onSearchChange, selectedPatient, onSelectPatient, onViewHistory, onEditPatient }: PatientListProps) {
     return (
@@ -102,8 +33,6 @@ export default function PatientList({ patients, searchTerm, onSearchChange, sele
                         <th className="py-2 w-16"></th>
                         <th className="py-2">Nome</th>
                         <th className="py-2">E-mail</th>
-                        <th className="py-2">Última Consulta</th>
-                        <th className="py-2">Status</th>
                         <th className="py-2 text-center">Ações</th>
                     </tr>
                 </thead>
@@ -126,25 +55,6 @@ export default function PatientList({ patients, searchTerm, onSearchChange, sele
                                 </td>
                                 <td className="py-3 font-medium text-gray-800">{patient.name}</td>
                                 <td className="py-3 text-gray-600">{patient.email}</td>
-                                <td className="py-3 text-gray-600">{patient.lastAppointment}</td>
-                                <td className="py-3">
-                                    {(() => {
-                                        const statusInfo = getPatientStatusInfo(patient);
-                                        return (
-                                            <div className="flex flex-col gap-1">
-                                                <span className={`px-2 py-1 text-xs font-semibold rounded-full inline-flex items-center ${statusInfo.color}`}>
-                                                    {statusInfo.icon}
-                                                    {statusInfo.label}
-                                                </span>
-                                                {statusInfo.showExpiration && statusInfo.daysLeft > 0 && (
-                                                    <span className={`text-xs ${statusInfo.daysLeft <= INVITE_URGENT_THRESHOLD_DAYS ? 'text-orange-600 font-semibold' : 'text-gray-600'}`}>
-                                                        Expira em {statusInfo.daysLeft} {statusInfo.daysLeft === 1 ? 'dia' : 'dias'}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        );
-                                    })()}
-                                </td>
                                 <td className="py-3">
                                     <div className="flex justify-center items-center space-x-2">
                                         <button 
@@ -173,7 +83,7 @@ export default function PatientList({ patients, searchTerm, onSearchChange, sele
                         ))
                     ) : (
                         <tr>
-                            <td colSpan={6} className="text-center py-8 text-gray-500">
+                            <td colSpan={4} className="text-center py-8 text-gray-500">
                                 Nenhum paciente encontrado.
                             </td>
                         </tr>

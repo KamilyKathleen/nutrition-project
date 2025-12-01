@@ -122,8 +122,8 @@ export interface IMetric extends Document {
   unit: MetricUnit;
 
   // Contexto
-  userId?: string;
-  patientId?: string;
+  userId?: any;
+  patientId?: any;
   resourceId?: string;
   resourceType?: string;
 

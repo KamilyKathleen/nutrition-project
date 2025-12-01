@@ -14,7 +14,7 @@ export default function PendingInvites({ onInviteAccepted }: Readonly<PendingInv
   const [processingInvite, setProcessingInvite] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // 📋 Carregar convites pendentes
+  // Carregar convites pendentes
   useEffect(() => {
     loadPendingInvites();
   }, []);
@@ -33,7 +33,7 @@ export default function PendingInvites({ onInviteAccepted }: Readonly<PendingInv
     }
   };
 
-  // ✅ Aceitar convite
+  // Aceitar convite
   const handleAcceptInvite = async (inviteId: string) => {
     try {
       setProcessingInvite(inviteId);
@@ -57,7 +57,7 @@ export default function PendingInvites({ onInviteAccepted }: Readonly<PendingInv
     }
   };
 
-  // ❌ Recusar convite (por enquanto só remove da lista)
+  // Recusar convite (por enquanto só remove da lista)
   const handleRejectInvite = async (inviteId: string) => {
     const confirmReject = confirm('Tem certeza que deseja recusar este convite?');
     if (!confirmReject) return;

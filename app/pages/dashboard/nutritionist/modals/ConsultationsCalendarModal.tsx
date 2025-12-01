@@ -40,7 +40,7 @@ export default function ConsultationsCalendarModal({ isOpen, onClose }: Consulta
         setLoading(true);
         try {
             const token = localStorage.getItem('authToken');
-            const response = await fetch('http://localhost:8000/api/consultations', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/consultations`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -188,8 +188,12 @@ export default function ConsultationsCalendarModal({ isOpen, onClose }: Consulta
                                     <button
                                         key={consultation.id}
                                         onClick={() => handleConsultationClick(consultation)}
-                                        className="w-full text-left text-xs bg-green-100 text-green-800 px-1 py-0.5 rounded truncate hover:bg-green-200 transition"
-                                        title={`${formatTime(consultation.date)} - ${consultation.patientName || 'Paciente'} - Clique para editar`}
+                                        className={`w-full text-left text-xs px-1 py-0.5 rounded truncate hover:opacity-80 transition ${
+                                            consultation.status === 'completed' 
+                                                ? 'bg-gray-200 text-gray-700 line-through' 
+                                                : 'bg-green-100 text-green-800'
+                                        }`}
+                                        title={`${formatTime(consultation.date)} - ${consultation.patientName || 'Paciente'} - ${consultation.status === 'completed' ? 'Realizada' : 'Agendada'} - Clique para editar`}
                                     >
                                         {formatTime(consultation.date)}
                                     </button>
@@ -230,10 +234,16 @@ export default function ConsultationsCalendarModal({ isOpen, onClose }: Consulta
                                     <button
                                         key={consultation.id}
                                         onClick={() => handleConsultationClick(consultation)}
-                                        className="w-full text-left p-2 bg-green-50 border border-green-200 rounded text-xs hover:bg-green-100 transition"
+                                        className={`w-full text-left p-2 border rounded text-xs hover:opacity-80 transition ${
+                                            consultation.status === 'completed'
+                                                ? 'bg-gray-50 border-gray-300'
+                                                : 'bg-green-50 border-green-200'
+                                        }`}
                                         title="Clique para editar"
                                     >
-                                        <div className="font-semibold text-green-800">
+                                        <div className={`font-semibold ${
+                                            consultation.status === 'completed' ? 'text-gray-600 line-through' : 'text-green-800'
+                                        }`}>
                                             {formatTime(consultation.date)}
                                         </div>
                                         <div className="text-gray-700">
@@ -242,6 +252,9 @@ export default function ConsultationsCalendarModal({ isOpen, onClose }: Consulta
                                         <div className="text-gray-500">
                                             {consultation.duration}min
                                         </div>
+                                        {consultation.status === 'completed' && (
+                                            <div className="text-xs text-gray-600 mt-1">Realizada</div>
+                                        )}
                                     </button>
                                 ))}
                             </div>
@@ -276,13 +289,19 @@ export default function ConsultationsCalendarModal({ isOpen, onClose }: Consulta
                             <button
                                 key={consultation.id}
                                 onClick={() => handleConsultationClick(consultation)}
-                                className="w-full text-left p-4 bg-white border border-gray-200 rounded-lg hover:shadow-md hover:border-blue-300 transition"
+                                className={`w-full text-left p-4 border rounded-lg hover:shadow-md transition ${
+                                    consultation.status === 'completed'
+                                        ? 'bg-gray-50 border-gray-300 hover:border-gray-400'
+                                        : 'bg-white border-gray-200 hover:border-blue-300'
+                                }`}
                             >
                                 <div className="flex items-start justify-between">
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2 mb-2">
                                             <Clock className="h-4 w-4 text-blue-600" />
-                                            <span className="font-semibold text-gray-800">
+                                            <span className={`font-semibold ${
+                                                consultation.status === 'completed' ? 'text-gray-600 line-through' : 'text-gray-800'
+                                            }`}>
                                                 {formatTime(consultation.date)}
                                             </span>
                                             <span className="text-sm text-gray-500">
@@ -299,8 +318,12 @@ export default function ConsultationsCalendarModal({ isOpen, onClose }: Consulta
                                             <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
                                                 {getTypeLabel(consultation.type)}
                                             </span>
-                                            <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-                                                {consultation.status === 'scheduled' ? 'Agendada' : 'Reagendada'}
+                                            <span className={`text-xs px-2 py-1 rounded ${
+                                                consultation.status === 'completed'
+                                                    ? 'bg-gray-200 text-gray-700'
+                                                    : 'bg-green-100 text-green-800'
+                                            }`}>
+                                                {consultation.status === 'completed' ? 'Realizada' : 'Agendada'}
                                             </span>
                                         </div>
                                         {consultation.notes && (

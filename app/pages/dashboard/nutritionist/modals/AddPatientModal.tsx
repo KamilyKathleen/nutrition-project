@@ -19,15 +19,24 @@ export default function AddPatientModal({ isOpen, onClose, onAddPatient }: AddPa
         const patientData = {
             name: formData.get('name') as string,
             email: formData.get('email') as string || undefined, // E-mail opcional
-            phone: formData.get('phone') as string,
             dateOfBirth: formData.get('dateOfBirth') as string,
             sex: formData.get('sex') as string,
             goal: formData.get('goal') as string
         };
 
+        if (patientData.email) {
+            const confirmCreate = confirm(
+                `Confirmar criação do paciente com o email ${patientData.email}?`
+            );
+            
+            if (!confirmCreate) {
+                return;
+            }
+        }
+
         try {
             const token = localStorage.getItem('authToken');
-            const response = await fetch('http://localhost:8000/api/patients', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/patients`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -38,7 +47,15 @@ export default function AddPatientModal({ isOpen, onClose, onAddPatient }: AddPa
 
             if (response.ok) {
                 const result = await response.json();
-                alert('✅ Paciente adicionado com sucesso!');
+                
+                if (patientData.email) {
+                    alert(
+                        'Paciente adicionado com sucesso!'
+                    );
+                } else {
+                    alert('Paciente adicionado com sucesso!');
+                }
+                
                 onAddPatient(result.data);
                 onClose();
             } else {
@@ -62,7 +79,15 @@ export default function AddPatientModal({ isOpen, onClose, onAddPatient }: AddPa
                 >
                     <X size={24} />
                 </button>
-                <h2 className="text-2xl font-bold mb-6 text-gray-800">Adicionar Novo Paciente</h2>
+                <h2 className="text-2xl font-bold mb-2 text-gray-800">Adicionar Novo Paciente</h2>
+                
+                {/* Aviso sobre convites */}
+                <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-800">
+                        <strong>💡 Dica:</strong> Se o paciente já tem conta no sistema, use <strong>"Convidar Paciente"</strong> ao invés de adicionar.
+                        Pacientes adicionados aqui precisarão se registrar no sistema para fazer login.
+                    </p>
+                </div>
                 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     {/* Informações Pessoais */}
@@ -74,10 +99,6 @@ export default function AddPatientModal({ isOpen, onClose, onAddPatient }: AddPa
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium text-gray-700">E-mail (opcional)</label>
                             <input type="email" id="email" name="email" className="mt-1 w-full input-style" placeholder="email@exemplo.com" />
-                        </div>
-                        <div>
-                            <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Telefone *</label>
-                            <input type="tel" id="phone" name="phone" required className="mt-1 w-full input-style" placeholder="(00) 00000-0000" />
                         </div>
                         <div>
                             <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700">Data de Nascimento *</label>

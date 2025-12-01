@@ -31,6 +31,23 @@ const validateRequest = (req: any, res: any, next: any) => {
 router.use(authenticate);
 
 /**
+ * 📋 ROTA ESPECÍFICA PARA PACIENTE VER SEUS PRÓPRIOS PLANOS
+ * Deve vir ANTES das autorizações de nutricionista
+ */
+router.get('/my-plans',
+  authorize([UserRole.PATIENT]),
+  DietPlanController.getMyPlans
+);
+
+/**
+ * 📄 ROTA PARA PACIENTE BAIXAR PLANO ATIVO EM PDF
+ */
+router.get('/active/pdf',
+  authorize([UserRole.PATIENT]),
+  DietPlanController.downloadActivePlanPDF
+);
+
+/**
  * 🎯 VALIDAÇÕES PARA CRIAÇÃO DE PLANO DIETÉTICO
  */
 const createDietPlanValidation = [

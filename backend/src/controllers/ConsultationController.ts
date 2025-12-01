@@ -292,6 +292,50 @@ class ConsultationController {
   }
 
   /**
+   * ✅ MARCAR CONSULTA COMO REALIZADA
+   * PATCH /api/consultations/:id/mark-completed
+   */
+  async markAsCompleted(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { id } = req.params;
+      const nutritionistId = req.user!.userId;
+
+      console.log('🎯 [MARK-COMPLETED] Iniciando...');
+      console.log('📋 Consultation ID:', id);
+      console.log('👨‍⚕️ Nutritionist ID:', nutritionistId);
+      console.log('📦 Body recebido:', req.body);
+      console.log('🔑 Headers Authorization:', req.headers.authorization ? 'Presente' : 'Ausente');
+
+      if (!id) {
+        console.error('❌ ID da consulta não fornecido');
+        res.status(400).json({
+          success: false,
+          message: 'ID da consulta é obrigatório'
+        });
+        return;
+      }
+
+      console.log('⏳ Chamando ConsultationService.update...');
+      const consultation = await ConsultationService.update(id, nutritionistId, {
+        status: 'completed',
+        actualDate: new Date()
+      });
+
+      console.log('✅ Consulta atualizada com sucesso:', consultation);
+
+      res.json({
+        success: true,
+        message: 'Consulta marcada como realizada',
+        data: consultation
+      });
+    } catch (error: any) {
+      console.error('🔥 ERRO em markAsCompleted:', error);
+      console.error('📊 Stack:', error.stack);
+      next(error);
+    }
+  }
+
+  /**
    * 🔄 REAGENDAR CONSULTA
    * PATCH /api/consultations/:id/reschedule
    */
@@ -452,6 +496,54 @@ class ConsultationController {
         count: result.consultations.length
       });
     } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * ⏰ PACIENTE VER SUAS PRÓXIMAS CONSULTAS
+   * GET /api/consultations/my-upcoming
+   */
+  async getMyUpcomingConsultations(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = req.user!.userId;
+      const userEmail = req.user!.email;
+      
+      console.log('🔍 Buscando consultas para paciente:', { userId, userEmail });
+      
+      // Buscar paciente por userId ou email
+      const PatientModel = require('../models/Patient').PatientModel;
+      let patient = await PatientModel.findOne({ userId }).lean();
+      
+      if (!patient) {
+        console.log('🔍 Não encontrado por userId, tentando por email...');
+        patient = await PatientModel.findOne({ email: userEmail }).lean();
+      }
+      
+      if (!patient) {
+        res.status(404).json({
+          success: false,
+          message: 'Paciente não encontrado'
+        });
+        return;
+      }
+
+      console.log('✅ Paciente encontrado:', patient._id);
+      
+      // Buscar consultas futuras do paciente
+      const consultations = await ConsultationService.findUpcomingByPatientId(
+        patient._id.toString()
+      );
+
+      console.log('✅ Consultas encontradas:', consultations.length);
+
+      res.json({
+        success: true,
+        message: 'Próximas consultas do paciente',
+        data: consultations
+      });
+    } catch (error) {
+      console.error('🔥 Erro ao buscar consultas do paciente:', error);
       next(error);
     }
   }

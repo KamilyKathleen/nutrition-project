@@ -3,7 +3,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { AuthService, LoginRequest, RegisterRequest } from '@/app/services';
 
-// Tipo simplificado do usuário para o contexto de autenticação
 interface AuthUser {
   id: string;
   name: string;
@@ -48,22 +47,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.log('🔍 AuthContext: Token encontrado:', !!token);
         
         if (token) {
-          // Verificar se o token ainda é válido
-          const userData = await AuthService.verifyToken();
-          console.log('🔍 AuthContext: Dados do usuário recuperados:', userData);
+          // Verificar se há dados do usuário salvos no localStorage
+          const savedUserData = localStorage.getItem('nutriplan_user');
           
-          if (userData) {
-            setUser(userData);
-            console.log('🔍 AuthContext: Usuário setado a partir do localStorage');
+          if (savedUserData) {
+            try {
+              const userData = JSON.parse(savedUserData);
+              setUser(userData);
+              console.log('AuthContext: Usuário restaurado do localStorage:', userData.email);
+            } catch (parseError) {
+              console.error('Erro ao parsear dados do usuário, fazendo logout');
+              AuthService.logout();
+            }
+          } else {
+            // Token existe mas não tem dados do usuário - limpar
+            console.log('Token existe mas não tem dados do usuário - fazendo logout');
+            AuthService.logout();
           }
         }
       } catch (error) {
-        console.error('❌ AuthContext: Erro ao verificar status de autenticação:', error);
-        // Token inválido, limpar dados
-        AuthService.logout();
+        console.error('AuthContext: Erro ao verificar status de autenticação:', error);
       } finally {
         setIsLoading(false);
-        console.log('🔍 AuthContext: Verificação de auth finalizada');
+        console.log('AuthContext: Verificação de auth finalizada');
       }
     };
 
@@ -72,23 +78,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (credentials: LoginRequest) => {
     try {
-      console.log('🔍 AuthContext: Iniciando login...', credentials);
+      console.log('AuthContext: Iniciando login...', credentials);
       setIsLoading(true);
       const response = await AuthService.login(credentials) as any;
-      console.log('🔍 AuthContext: Resposta do login:', response);
-      console.log('🔍 AuthContext: response.user:', response.user);
-      console.log('🔍 AuthContext: response.token:', response.token);
+      console.log('AuthContext: Resposta do login:', response);
+      console.log('AuthContext: response.user:', response.user);
+      console.log('AuthContext: response.token:', response.token);
       
       // FALLBACK: Se response.user for undefined, extrair de response.data
       const userData = response.user || response.data?.user;
       const token = response.token || response.data?.token;
       
-      console.log('🔍 AuthContext: userData extraído:', userData);
-      console.log('🔍 AuthContext: token extraído:', token);
+      console.log('AuthContext: userData extraído:', userData);
+      console.log('AuthContext: token extraído:', token);
       
       // Setar usuário imediatamente
       setUser(userData);
-      console.log('🔍 AuthContext: Usuário setado no estado:', userData);
+      console.log('AuthContext: Usuário setado no estado:', userData);
       
       // Aguardar um pouco para garantir que o localStorage foi atualizado
       await new Promise(resolve => setTimeout(resolve, 100));
@@ -96,14 +102,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Verificar se o localStorage foi atualizado corretamente
       const savedToken = AuthService.getToken();
       const savedUser = await AuthService.verifyToken();
-      console.log('🔍 AuthContext: Verificação pós-login - Token salvo:', !!savedToken, 'User salvo:', !!savedUser);
+      console.log('AuthContext: Verificação pós-login - Token salvo:', !!savedToken, 'User salvo:', !!savedUser);
       
     } catch (error) {
-      console.error('❌ AuthContext: Erro no login:', error);
+      console.error('AuthContext: Erro no login:', error);
       throw error;
     } finally {
       setIsLoading(false);
-      console.log('🔍 AuthContext: Loading finalizado');
+      console.log('AuthContext: Loading finalizado');
     }
   };
 

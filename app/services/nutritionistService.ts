@@ -32,14 +32,9 @@ interface ApiResponse<T> {
 }
 
 class NutritionistService {
-    
-    /**
-     * 📋 Buscar todos os pacientes do nutricionista
-     * Inclui pacientes criados + convites pendentes
-     */
+
     async getPatients(page = 1, limit = 20): Promise<DashboardPatient[]> {
         try {
-            console.log('🔍 [Nutritionist] Buscando pacientes...');
             
             // Buscar pacientes vinculados
             const patientsResponse = await apiClient.get<ApiResponse<any[]>>(`/patients?page=${page}&limit=${limit}`);
@@ -49,9 +44,6 @@ class NutritionistService {
             
             const patients = patientsResponse.data || [];
             const invites = invitesResponse.data || [];
-            
-            console.log('📋 [Nutritionist] Pacientes encontrados:', patients.length);
-            console.log('📧 [Nutritionist] Convites encontrados:', invites.length);
             
             // Converter e combinar dados
             const dashboardPatients: DashboardPatient[] = [];
@@ -90,21 +82,16 @@ class NutritionistService {
                 }
             });
             
-            console.log('✅ [Nutritionist] Total no dashboard:', dashboardPatients.length);
             return dashboardPatients;
             
         } catch (error: any) {
-            console.error('❌ [Nutritionist] Erro ao buscar pacientes:', error);
+            console.error('Erro ao buscar pacientes:', error);
             throw new Error(`Erro ao carregar pacientes: ${error.message}`);
         }
     }
     
-    /**
-     * 👁️ Buscar histórico completo de um paciente
-     */
     async getPatientHistory(patientId: string): Promise<PatientHistory> {
         try {
-            console.log(`🔍 [Nutritionist] Buscando histórico do paciente ${patientId}...`);
             
             // Buscar dados do paciente
             const patientResponse = await apiClient.get<ApiResponse<any>>(`/patients/${patientId}`);
@@ -150,18 +137,14 @@ class NutritionistService {
                     endDate: plan.endDate,
                     createdAt: plan.createdAt
                 })),
-                appointments: [] // TODO: implementar quando houver sistema de agendamentos
+                appointments: [] 
             };
             
-            console.log('✅ [Nutritionist] Histórico carregado:', {
-                assessments: history.assessments.length,
-                dietPlans: history.dietPlans.length
-            });
             
             return history;
             
         } catch (error: any) {
-            console.error('❌ [Nutritionist] Erro ao buscar histórico:', error);
+            console.error('Erro ao buscar histórico:', error);
             throw new Error(`Erro ao carregar histórico: ${error.message}`);
         }
     }
@@ -171,7 +154,6 @@ class NutritionistService {
      */
     async addPatient(patientData: AddPatientRequest): Promise<DashboardPatient> {
         try {
-            console.log('➕ [Nutritionist] Adicionando paciente:', patientData);
             
             if (patientData.sendInvite) {
                 // Enviar apenas convite
@@ -216,7 +198,7 @@ class NutritionistService {
             }
             
         } catch (error: any) {
-            console.error('❌ [Nutritionist] Erro ao adicionar paciente:', error);
+            console.error('Erro ao adicionar paciente:', error);
             throw new Error(`Erro ao adicionar paciente: ${error.message}`);
         }
     }
@@ -226,38 +208,21 @@ class NutritionistService {
      */
     async sendInvite(inviteData: SendInviteRequest): Promise<void> {
         try {
-            console.log('📧 [Nutritionist] Enviando convite:', inviteData);
-            
             await apiClient.post<ApiResponse<any>>('/patients/invite', inviteData);
-            
-            console.log('✅ [Nutritionist] Convite enviado com sucesso');
-            
         } catch (error: any) {
-            console.error('❌ [Nutritionist] Erro ao enviar convite:', error);
             throw new Error(`Erro ao enviar convite: ${error.message}`);
         }
     }
     
-    /**
-     * ❌ Cancelar convite pendente
-     */
+
     async cancelInvite(inviteId: string): Promise<void> {
         try {
-            console.log(`❌ [Nutritionist] Cancelando convite ${inviteId}...`);
-            
             await apiClient.delete(`/patients/invite/${inviteId}`);
-            
-            console.log('✅ [Nutritionist] Convite cancelado');
-            
         } catch (error: any) {
-            console.error('❌ [Nutritionist] Erro ao cancelar convite:', error);
             throw new Error(`Erro ao cancelar convite: ${error.message}`);
         }
     }
-    
-    /**
-     * 🎯 Determinar status do convite
-     */
+
     private getInviteStatus(invite: any): PatientStatus {
         if (invite.status === 'pending') {
             // Verificar se expirou
@@ -278,9 +243,7 @@ class NutritionistService {
         return 'not_linked';
     }
     
-    /**
-     * 📊 Buscar estatísticas do dashboard
-     */
+
     async getDashboardStats() {
         try {
             // Buscar todos os pacientes para calcular estatísticas
@@ -297,7 +260,7 @@ class NutritionistService {
             return stats;
             
         } catch (error: any) {
-            console.error('❌ [Nutritionist] Erro ao buscar estatísticas:', error);
+            console.error('Erro ao buscar estatísticas:', error);
             return {
                 totalPatients: 0,
                 linkedPatients: 0,

@@ -223,12 +223,11 @@ router.get('/public/categories',
 
 /**
  * 📝 Criar novo post (apenas nutricionistas)
- * ⚠️ AUTENTICAÇÃO TEMPORARIAMENTE DESABILITADA PARA TESTES
  */
 console.log('🔵 DEFININDO ROTA POST /');
 router.post('/',
-  // authenticate,  // ← DESABILITADO TEMPORARIAMENTE
-  // authorize(UserRole.NUTRITIONIST),  // ← DESABILITADO TEMPORARIAMENTE
+  authenticate,
+  authorize(UserRole.NUTRITIONIST),
   createPostValidation,
   validateRequest,
   BlogController.createPost

@@ -7,6 +7,7 @@ import { AppError } from '../middlewares/errorHandler';
 export class PatientService {
   /**
    * Vincula paciente a usuário por email, sem revelar existência do usuário
+   * CORRIGIDO: Agora cria um convite ao invés de vincular automaticamente
    */
   async linkToUserByEmail(patientId: string, email: string): Promise<void> {
     if (!mongoose.Types.ObjectId.isValid(patientId)) {
@@ -20,21 +21,32 @@ export class PatientService {
 
     // Buscar usuário pelo email
     const UserModel = require('../models/User').UserModel;
-    const user = await UserModel.findOne({ email });
+    const user = await UserModel.findOne({ email: email.toLowerCase() });
     if (!user || user.role !== 'patient') {
       // Não revelar existência
+      console.log(`📧 Usuário não encontrado ou não é paciente: ${email}`);
       return;
     }
 
-    // Atualizar paciente com o userId e status
-    await PatientModel.findByIdAndUpdate(
-      patientId,
-      {
-        userId: user._id,
-        status: 'linked'
+    // 📤 CRIAR CONVITE ao invés de vincular automaticamente
+    const { PatientInviteService } = await import('./PatientInviteService');
+    const inviteService = new PatientInviteService();
+    
+    try {
+      await inviteService.createInvite({
+        patientEmail: email.toLowerCase(),
+        patientName: user.name
+      }, patient.nutritionistId.toString());
+      
+      console.log(`✅ Convite criado para ${email} - Aguardando aceitação do paciente`);
+    } catch (error: any) {
+      // Se já existe convite pendente, ignorar erro
+      if (error.message?.includes('convite pendente')) {
+        console.log(`ℹ️ Já existe convite pendente para ${email}`);
+      } else {
+        throw error;
       }
-    );
-    // Aqui você pode enviar notificação, email, etc, se necessário
+    }
   }
   /**
    * 🎯 CRIAR PACIENTE
@@ -57,7 +69,7 @@ export class PatientService {
         ...patientJson,
         id: savedPatient._id.toString(),
         nutritionistId: savedPatient.nutritionistId.toString()
-      } as Patient;
+      } as any;
     } catch (error: any) {
       if (error instanceof AppError) {
         throw error;
@@ -95,7 +107,7 @@ export class PatientService {
         nutritionistId: typeof patient.nutritionistId === 'object' && patient.nutritionistId._id 
           ? patient.nutritionistId._id.toString()
           : patient.nutritionistId.toString()
-      } as Patient;
+      } as any;
     } catch (error) {
       throw new AppError('Erro ao buscar paciente', 500);
     }
@@ -208,7 +220,7 @@ export class PatientService {
         id,
         updateFields,
         { new: true, runValidators: true }
-      ).populate('studentId', 'name email');
+      ).populate('nutritionistId', 'name email');
 
       if (!updatedPatient) {
         throw new AppError('Paciente não encontrado', 404);
@@ -219,7 +231,7 @@ export class PatientService {
         ...patientJson,
         id: updatedPatient._id.toString(),
         nutritionistId: updatedPatient.nutritionistId.toString()
-      } as Patient;
+      } as any;
     } catch (error: any) {
       if (error instanceof AppError) {
         throw error;
@@ -329,7 +341,47 @@ export class PatientService {
   }
 
   /**
-   * � BUSCAR PACIENTE POR EMAIL
+   * 🔍 BUSCAR PACIENTE POR USER ID
+   * Por que este método?
+   * - Busca pelo userId (mais preciso que email)
+   * - Usado quando o usuário está logado e sabemos o ID dele
+   */
+  async findByUserId(userId: string): Promise<Patient | null> {
+    try {
+      console.log('🔍 Buscando paciente por userId:', userId);
+      
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        console.log('❌ userId inválido');
+        return null;
+      }
+
+      const patient = await PatientModel.findOne({
+        userId: new mongoose.Types.ObjectId(userId),
+        isActive: true
+      }).exec();
+
+      if (!patient) {
+        console.log('❌ Nenhum paciente encontrado com userId:', userId);
+        return null;
+      }
+
+      console.log('✅ Paciente encontrado por userId:', patient.email);
+      
+      const patientJson = patient.toJSON();
+      return {
+        ...patientJson,
+        id: patient._id.toString(),
+        nutritionistId: patient.nutritionistId.toString()
+      } as any;
+
+    } catch (error: any) {
+      console.error('❌ Erro ao buscar paciente por userId:', error);
+      return null;
+    }
+  }
+
+  /**
+   * 📧 BUSCAR PACIENTE POR EMAIL
    * Por que este método?
    * - Permite ao paciente verificar se tem relacionamento
    * - Usado para verificar vínculos nutricionista-paciente

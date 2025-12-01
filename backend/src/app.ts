@@ -45,9 +45,9 @@ app.use(helmet());
 app.use(compression());
 app.use(rateLimiter);
 
-// CORS configuration
+// CORS configuration - Liberado para todas as origens
 app.use(cors({
-  origin: [config.CLIENT_URL, 'http://localhost:3000', 'http://localhost:3001'],
+  origin: '*',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],

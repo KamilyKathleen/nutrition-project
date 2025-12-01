@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Search, Link as LinkIcon, AlertCircle } from 'lucide-react';
+import { X, Search, Link as LinkIcon, AlertCircle, Trash2 } from 'lucide-react';
 import { Patient } from '../../shared/types';
 
 interface EditPatientModalProps {
@@ -15,6 +15,7 @@ interface EditPatientModalProps {
 export default function EditPatientModal({ patient, isOpen, onClose, onUpdate }: EditPatientModalProps) {
     const [emailToLink, setEmailToLink] = useState('');
     const [linking, setLinking] = useState(false);
+    const [deleting, setDeleting] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
@@ -33,7 +34,7 @@ export default function EditPatientModal({ patient, isOpen, onClose, onUpdate }:
         try {
             setLinking(true);
             const token = localStorage.getItem('authToken');
-            const response = await fetch(`http://localhost:8000/api/patients/${patient.id}/link`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/patients/${patient.id}/link`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -45,7 +46,7 @@ export default function EditPatientModal({ patient, isOpen, onClose, onUpdate }:
             });
 
             if (response.ok) {
-                alert('Se um usuário com esse email existir, ele recebeu o convite.');
+                alert('Convite enviado! Se o usuário existir, ele receberá o convite para aceitar.');
                 onUpdate();
                 onClose();
             } else {
@@ -53,14 +54,54 @@ export default function EditPatientModal({ patient, isOpen, onClose, onUpdate }:
                 alert('Erro ao tentar vincular: ' + error.message);
             }
         } catch (error) {
-            console.error('❌ Erro ao vincular paciente:', error);
             alert('Erro ao vincular paciente. Tente novamente.');
         } finally {
             setLinking(false);
         }
     };
 
-    const isLinked = patient.status === 'linked';
+    const handleDeletePatient = async () => {
+        const confirmDelete = confirm(
+            `ATENÇÃO!\n\n` +
+            `Tem certeza que deseja EXCLUIR o paciente "${patient.name}"?\n\n` +
+            `Esta ação irá remover:\n` +
+            `- Cadastro do paciente\n` +
+            `- Avaliações nutricionais\n` +
+            `- Planos alimentares\n` +
+            `- Histórico de consultas\n\n` +
+            `Esta ação NÃO pode ser desfeita!`
+        );
+
+        if (!confirmDelete) return;
+
+        try {
+            setDeleting(true);
+            const token = localStorage.getItem('authToken');
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/patients/${patient.id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                }
+            });
+
+            if (response.ok) {
+                alert('Paciente excluído com sucesso!');
+                onUpdate();
+                onClose();
+            } else {
+                const error = await response.json();
+                alert('Erro ao excluir paciente: ' + error.message);
+            }
+        } catch (error) {
+            console.error('Erro ao excluir paciente:', error);
+            alert('Erro ao excluir paciente. Tente novamente.');
+        } finally {
+            setDeleting(false);
+        }
+    };
+
+    // Verifica se o paciente já tem userId (está vinculado)
+    const isLinked = !!patient.userId;
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -159,12 +200,20 @@ export default function EditPatientModal({ patient, isOpen, onClose, onUpdate }:
                 </div>
 
                 {/* Footer */}
-                <div className="sticky bottom-0 bg-gray-50 px-6 py-4 rounded-b-xl flex justify-end gap-3 border-t">
+                <div className="sticky bottom-0 bg-gray-50 px-6 py-4 rounded-b-xl flex justify-between gap-3 border-t">
+                    <button
+                        onClick={handleDeletePatient}
+                        disabled={deleting}
+                        className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-semibold flex items-center gap-2"
+                    >
+                        <Trash2 size={18} />
+                        {deleting ? 'Excluindo...' : 'Excluir Paciente'}
+                    </button>
                     <button
                         onClick={onClose}
                         className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-semibold"
                     >
-                        Cancelar
+                        Fechar
                     </button>
                 </div>
             </div>

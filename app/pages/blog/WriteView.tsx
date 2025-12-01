@@ -42,8 +42,6 @@ export default function WriteView() {
                 ...article,
                 status: publish ? BlogStatus.PUBLISHED : BlogStatus.DRAFT
             };
-
-            console.log('📤 [WriteView] Enviando requisição para BlogService.createPost...');
             await BlogService.createPost(postData);
             
             setSuccess(publish ? 'Artigo publicado com sucesso!' : 'Rascunho salvo com sucesso!');
@@ -59,7 +57,7 @@ export default function WriteView() {
                 setSuccess(null);
             }, 2000);
         } catch (err: any) {
-            console.error('❌ [WriteView] Erro:', err.message);
+            console.error('[WriteView] Erro:', err.message);
             setError(err.message || 'Erro ao salvar artigo. Tente novamente.');
         } finally {
             setLoading(false);

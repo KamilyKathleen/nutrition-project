@@ -7,11 +7,16 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import AuthService from '@/app/services/authService';
 
 export default function LoginPage() {
     const { login } = useAuth();
     const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
+    const [showResetModal, setShowResetModal] = useState(false);
+    const [resetEmail, setResetEmail] = useState('');
+    const [resetLoading, setResetLoading] = useState(false);
+    const [resetMessage, setResetMessage] = useState('');
     const [formData, setFormData] = useState({
         email: '',
         password: ''
@@ -25,27 +30,40 @@ export default function LoginPage() {
         }));
     };
 
+    const handleResetPassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setResetLoading(true);
+        setResetMessage('');
+
+        try {
+            await AuthService.resetPassword(resetEmail);
+            setResetMessage('Email de recuperação enviado! Verifique sua caixa de entrada.');
+            setTimeout(() => {
+                setShowResetModal(false);
+                setResetEmail('');
+                setResetMessage('');
+            }, 3000);
+        } catch (error) {
+            setResetMessage('Erro ao enviar email. Verifique o endereço e tente novamente.');
+        } finally {
+            setResetLoading(false);
+        }
+    };
+
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         
         try {
-            console.log('Dados sendo enviados para login:', {
-                email: formData.email,
-                password: formData.password
-            });
             
             await login({
                 email: formData.email,
                 password: formData.password
             });
             
-            console.log('🔍 Login: Login realizado com sucesso, redirecionando para dashboard...');
             
             // Sucesso - navegar para dashboard
             router.push('/pages/dashboard');
-            console.log('🔍 Login: Router.push executado');
         } catch (error) {
-            console.error('Erro no login:', error);
             alert('Erro no login: ' + (error as Error).message);
         }
     };
@@ -101,12 +119,13 @@ export default function LoginPage() {
                                 )}
                             </button>
 
-                            <Link
-                                href=""
+                            <button
+                                type="button"
+                                onClick={() => setShowResetModal(true)}
                                 className='text-gray-400 text-sm text-right hover:underline'
                             >
                                 Esqueci a senha
-                            </Link>
+                            </button>
                         </div>
 
                         <div className='text-center'>
@@ -136,6 +155,52 @@ export default function LoginPage() {
                         </p>
                     </div>
                 </div>
+
+                {showResetModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+                            <h2 className="text-xl font-semibold mb-4 text-gray-800">Recuperar Senha</h2>
+                            <p className="text-sm text-gray-600 mb-4">
+                                Digite seu email para receber o link de recuperação
+                            </p>
+                            <form onSubmit={handleResetPassword}>
+                                <input
+                                    type="email"
+                                    value={resetEmail}
+                                    onChange={(e) => setResetEmail(e.target.value)}
+                                    placeholder="seu@email.com"
+                                    required
+                                    className="w-full px-4 py-2 border border-gray-300 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-mintGreen"
+                                />
+                                {resetMessage && (
+                                    <p className={`text-sm mb-4 ${resetMessage.includes('Erro') ? 'text-red-600' : 'text-green-600'}`}>
+                                        {resetMessage}
+                                    </p>
+                                )}
+                                <div className="flex gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setShowResetModal(false);
+                                            setResetEmail('');
+                                            setResetMessage('');
+                                        }}
+                                        className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition"
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={resetLoading}
+                                        className="flex-1 px-4 py-2 bg-mintGreen text-coalGray rounded hover:bg-petroleumGreen hover:text-white transition disabled:opacity-50"
+                                    >
+                                        {resetLoading ? 'Enviando...' : 'Enviar'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
         </div>
     );
 }

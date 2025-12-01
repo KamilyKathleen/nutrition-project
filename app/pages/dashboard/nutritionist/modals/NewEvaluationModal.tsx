@@ -114,11 +114,9 @@ export default function NewEvaluationModal({ isOpen, onClose, patient }: NewEval
             };
         }
 
-        console.log('📊 Dados da avaliação a serem enviados:', assessmentData);
-
         try {
             const token = localStorage.getItem('authToken');
-            const response = await fetch('http://localhost:8000/api/nutritional-assessments', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/nutritional-assessments`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -135,11 +133,11 @@ export default function NewEvaluationModal({ isOpen, onClose, patient }: NewEval
                 handleClose(); // Usar a função personalizada que reseta o formulário
             } else {
                 const error = await response.json();
-                console.error('❌ Erro do servidor:', error);
+                console.error('Erro do servidor:', error);
                 alert('Erro ao salvar avaliação: ' + (error.message || JSON.stringify(error)));
             }
         } catch (error) {
-            console.error('❌ Erro ao salvar avaliação:', error);
+            console.error('Erro ao salvar avaliação:', error);
             alert('Erro ao salvar avaliação. Tente novamente.');
         }
     };

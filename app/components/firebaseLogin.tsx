@@ -49,9 +49,6 @@ export default function FirebaseLogin() {
 
       if (result.success) {
         setSuccess('Login realizado com sucesso!');
-        // Aqui você pode redirecionar o usuário
-        console.log('Usuário logado:', result.user);
-        console.log('Token:', result.token);
       } else {
         setError(result.error || 'Erro no login');
       }
@@ -92,8 +89,6 @@ export default function FirebaseLogin() {
 
       if (result.success) {
         setSuccess('Conta criada com sucesso!');
-        console.log('Usuário criado:', result.user);
-        console.log('Token:', result.token);
       } else {
         setError(result.error || 'Erro no registro');
       }
@@ -116,9 +111,6 @@ export default function FirebaseLogin() {
 
       if (result.success) {
         setSuccess('Login com Google realizado com sucesso!');
-        console.log('Usuário logado:', result.user);
-        console.log('Token:', result.token);
-        console.log('É novo usuário:', result.isNewUser);
       } else {
         setError(result.error || 'Erro no login com Google');
       }

@@ -91,6 +91,48 @@ export class DietPlanController {
   };
 
   /**
+   * 📄 BAIXAR PLANO ATIVO EM PDF
+   */
+  downloadActivePlanPDF = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    try {
+      const userId = req.user!.userId;
+      const userEmail = req.user!.email;
+      
+      console.log('📥 Gerando PDF do plano ativo para:', { userId, userEmail });
+      
+      // Buscar paciente
+      let patient = await DietPlanService.findPatientByUserId(userId);
+      if (!patient) {
+        patient = await DietPlanService.findPatientByEmail(userEmail);
+      }
+      
+      if (!patient) {
+        res.status(404).json({
+          success: false,
+          message: 'Paciente não encontrado'
+        });
+        return;
+      }
+
+      // Gerar PDF do plano ativo
+      const pdfBuffer = await DietPlanService.generateActivePlanPDF(patient._id.toString());
+      
+      // Configurar headers para download
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename=plano-alimentar-${new Date().toISOString().split('T')[0]}.pdf`);
+      res.send(pdfBuffer);
+      
+      console.log('✅ PDF gerado e enviado com sucesso');
+    } catch (error: any) {
+      console.error('🔥 Erro ao gerar PDF:', error);
+      res.status(error.statusCode || 500).json({
+        success: false,
+        message: error.message || 'Erro ao gerar PDF do plano alimentar'
+      });
+    }
+  };
+
+  /**
    * 📋 LISTAR PLANOS DO NUTRICIONISTA
    */
   getDietPlansByNutritionist = async (req: AuthenticatedRequest, res: Response): Promise<void> => {

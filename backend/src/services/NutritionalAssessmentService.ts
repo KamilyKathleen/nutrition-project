@@ -197,7 +197,34 @@ export class NutritionalAssessmentService {
   }
 
   /**
-   * 🔍 BUSCAR AVALIAÇÃO POR ID
+   * � LISTAR TODAS AS AVALIAÇÕES DE UM PACIENTE (SEM PAGINAÇÃO)
+   * Para uso em gráficos e relatórios
+   */
+  async findAllByPatientId(patientId: string): Promise<NutritionalAssessment[]> {
+    try {
+      const assessments = await NutritionalAssessmentModel
+        .find({ patientId: new mongoose.Types.ObjectId(patientId) })
+        .sort({ createdAt: 1 }) // Ordenar do mais antigo para o mais recente
+        .lean();
+
+      return assessments.map(assessment => ({
+        id: assessment._id.toString(),
+        patientId: assessment.patientId.toString(),
+        nutritionistId: assessment.nutritionistId.toString(),
+        anthropometricData: assessment.anthropometricData,
+        foodRecord: assessment.foodRecord,
+        physicalActivity: assessment.physicalActivity,
+        observations: assessment.observations,
+        createdAt: assessment.createdAt,
+        updatedAt: assessment.updatedAt
+      })) as NutritionalAssessment[];
+    } catch (error) {
+      throw new AppError('Erro ao listar avaliações do paciente', 500);
+    }
+  }
+
+  /**
+   * �🔍 BUSCAR AVALIAÇÃO POR ID
    */
   async findById(id: string, nutritionistId: string): Promise<NutritionalAssessment | null> {
     try {

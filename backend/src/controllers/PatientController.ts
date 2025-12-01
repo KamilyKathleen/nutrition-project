@@ -265,22 +265,59 @@ export class PatientController {
     const userId = req.user!.userId;
     const userEmail = req.user!.email;
 
-    // Buscar se o usuário tem relacionamento como paciente
-    const patient = await this.patientService.findByEmail(userEmail);
+    console.log('🔍 [getMyRelationship] Dados do usuário:', {
+      userId,
+      userEmail,
+      role: req.user!.role
+    });
 
-    if (!patient) {
-      res.status(404).json({
+    // Se não é paciente, retornar erro
+    if (req.user!.role !== 'patient') {
+      console.log('❌ [getMyRelationship] Usuário não é paciente');
+      res.status(403).json({
         success: false,
-        message: 'Nenhum relacionamento encontrado'
+        message: 'Apenas pacientes podem verificar relacionamento'
       });
       return;
     }
 
-    res.json({
-      success: true,
-      message: 'Relacionamento encontrado',
-      data: patient
-    });
+    try {
+      // Buscar por userId primeiro (mais preciso)
+      let patient = await this.patientService.findByUserId(userId);
+      
+      // Se não encontrar por userId, buscar por email
+      if (!patient) {
+        console.log('🔍 [getMyRelationship] Não encontrado por userId, buscando por email...');
+        patient = await this.patientService.findByEmail(userEmail);
+      }
+
+      if (!patient) {
+        console.log('ℹ️ [getMyRelationship] Nenhum relacionamento encontrado - retornando 404');
+        res.status(404).json({
+          success: false,
+          message: 'Nenhum relacionamento encontrado'
+        });
+        return;
+      }
+
+      console.log('✅ [getMyRelationship] Relacionamento encontrado:', {
+        patientId: patient.id,
+        status: patient.status,
+        hasNutritionist: !!patient.nutritionistId
+      });
+      
+      res.json({
+        success: true,
+        message: 'Relacionamento encontrado',
+        data: patient
+      });
+    } catch (error) {
+      console.error('❌ [getMyRelationship] Erro ao buscar relacionamento:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro ao verificar relacionamento'
+      });
+    }
   });
 
   /**
