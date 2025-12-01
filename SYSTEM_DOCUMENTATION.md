@@ -1,6 +1,6 @@
-# 📘 Documentação Completa do Sistema - Nutriplan
+# Documentação Completa do Sistema - Nutriplan
 
-## 📋 Índice
+## Índice
 1. [Visão Geral](#visão-geral)
 2. [Arquitetura do Sistema](#arquitetura-do-sistema)
 3. [Tecnologias Utilizadas](#tecnologias-utilizadas)
@@ -12,7 +12,7 @@
 
 ---
 
-## 🎯 Visão Geral
+## Visão Geral
 
 **Nutriplan** é uma plataforma web completa para gestão nutricional que conecta nutricionistas e pacientes, facilitando o acompanhamento nutricional, agendamento de consultas, criação de planos alimentares e compartilhamento de conteúdo educativo.
 
@@ -25,7 +25,7 @@
 
 ---
 
-## 🏗️ Arquitetura do Sistema
+## Arquitetura do Sistema
 
 ### Estrutura Geral
 ```
@@ -61,7 +61,7 @@ Frontend (Next.js) ←→ Backend (Express.js) ←→ MongoDB Atlas
 
 ---
 
-## 💻 Tecnologias Utilizadas
+## Tecnologias Utilizadas
 
 ### Frontend Stack
 
@@ -97,7 +97,7 @@ Frontend (Next.js) ←→ Backend (Express.js) ←→ MongoDB Atlas
 
 ---
 
-## 🗄️ Estrutura do Banco de Dados
+## Estrutura do Banco de Dados
 
 ### Coleções MongoDB
 
@@ -319,7 +319,7 @@ Patient 1 ─── N NutritionalAssessment
 
 ---
 
-## 🔐 Sistema de Autenticação
+## Sistema de Autenticação
 
 ### Fluxo de Autenticação Híbrida (Firebase + JWT)
 
@@ -391,102 +391,100 @@ requireAdmin()              // Atalho para admin
 
 ---
 
-## ✨ Funcionalidades Implementadas
+## Funcionalidades Implementadas
 
-### 👤 Funcionalidades de Paciente
+### Funcionalidades de Paciente
 
 #### 1. Autenticação
-- ✅ Registro com Firebase
-- ✅ Login com Firebase
-- ✅ Recuperação de senha via email (Firebase)
+-  Registro com Firebase
+-  Login com Firebase
+-  Recuperação de senha via email (Firebase)
 
 #### 2. Dashboard
-- ✅ Visualização da próxima consulta agendada
-- ✅ Acesso ao plano alimentar ativo
-- ✅ Visualização de convites pendentes de nutricionistas
+-  Visualização da próxima consulta agendada
+-  Acesso ao plano alimentar ativo
 
 #### 3. Convites
-- ✅ Receber convites de nutricionistas
-- ✅ Aceitar/rejeitar convites
-- ✅ Visualizar nutricionista vinculado
+-  Receber convites de nutricionistas
+-  Visualizar nutricionista vinculado
 
 #### 4. Consultas
-- ✅ Visualizar próxima consulta agendada
-- ✅ Ver data e horário da consulta
+-  Visualizar próxima consulta agendada
+-  Ver data e horário da consulta
 
 #### 5. Planos Alimentares
-- ✅ Acessar plano alimentar ativo
-- ✅ Visualizar refeições detalhadas
-- ✅ Ver orientações do nutricionista
+-  Acessar plano alimentar ativo
+-  Visualizar refeições detalhadas
+-  Ver orientações do nutricionista
 
-### 👨‍⚕️ Funcionalidades de Nutricionista
+###  Funcionalidades de Nutricionista
 
 #### 1. Gestão de Pacientes
-- ✅ Enviar convites para pacientes (por email)
-- ✅ Listar pacientes vinculados
-- ✅ Editar informações de pacientes
-- ✅ Visualizar lista simplificada de pacientes
-- ✅ Buscar pacientes
+-  Enviar convites para pacientes (por email)
+-  Listar pacientes vinculados
+-  Editar informações de pacientes
+-  Visualizar lista simplificada de pacientes
+-  Buscar pacientes
 
 #### 2. Consultas
-- ✅ Agendar consultas com pacientes
-- ✅ Visualizar calendário de consultas (dia/semana/mês)
-- ✅ Editar consultas agendadas
-- ✅ Marcar consultas como concluídas
-- ✅ Registrar observações e recomendações
-- ✅ Cancelar consultas
-- ✅ Ver agenda do dia
-- ✅ Estatísticas de consultas
+-  Agendar consultas com pacientes
+-  Visualizar calendário de consultas (dia/semana/mês)
+-  Editar consultas agendadas
+-  Marcar consultas como concluídas
+-  Registrar observações e recomendações
+-  Cancelar consultas
+-  Ver agenda do dia
+-  Estatísticas de consultas
 
 #### 3. Planos Alimentares
-- ✅ Criar planos alimentares personalizados
-- ✅ Definir metas nutricionais (calorias, macros)
-- ✅ Adicionar múltiplas refeições
-- ✅ Especificar alimentos, quantidades e horários
-- ✅ Ativar/desativar planos
-- ✅ Listar planos por paciente
-- ✅ Editar planos existentes
+-  Criar planos alimentares personalizados
+-  Definir metas nutricionais (calorias, macros)
+-  Adicionar múltiplas refeições
+-  Especificar alimentos, quantidades e horários
+-  Ativar/desativar planos
+-  Listar planos por paciente
+-  Editar planos existentes
 
 #### 4. Avaliações Nutricionais
-- ✅ Criar avaliações antropométricas
-- ✅ Registrar peso, altura, IMC, circunferências
-- ✅ Documentar registro alimentar
-- ✅ Registrar atividade física
-- ✅ Adicionar observações criptografadas
+-  Criar avaliações antropométricas
+-  Registrar peso, altura, IMC, circunferências
+-  Documentar registro alimentar
+-  Registrar atividade física
+-  Adicionar observações criptografadas
 
 #### 5. Blog
-- ✅ Criar posts educativos
-- ✅ Categorizar posts (nutrição, receitas, saúde, estilo de vida, notícias)
-- ✅ Adicionar tags
-- ✅ Publicar/arquivar posts
-- ✅ Deletar posts
-- ✅ Definição automática de `publishedAt` ao publicar
+-  Criar posts educativos
+-  Categorizar posts (nutrição, receitas, saúde, estilo de vida, notícias)
+-  Adicionar tags
+-  Publicar/arquivar posts
+-  Deletar posts
+-  Definição automática de `publishedAt` ao publicar
 
 ### 🌐 Funcionalidades Públicas
 
 #### 1. Página Inicial
-- ✅ Apresentação do sistema
-- ✅ Cards de funcionalidades principais
-- ✅ Seção de posts recentes do blog
-- ✅ Call-to-action para registro/login
+-  Apresentação do sistema
+-  Cards de funcionalidades principais
+-  Seção de posts recentes do blog
+-  Call-to-action para registro/login
 
 #### 2. Blog Público
-- ✅ Visualizar posts publicados
-- ✅ Filtrar por categoria
-- ✅ Buscar por título/conteúdo
-- ✅ Paginação de posts
-- ✅ Exibição de posts recentes na home
+-  Visualizar posts publicados
+-  Filtrar por categoria
+-  Buscar por título/conteúdo
+-  Paginação de posts
+-  Exibição de posts recentes na home
 
 #### 3. FAQ (Perguntas Frequentes)
-- ✅ Informações sobre funcionalidades
-- ✅ Como funciona o sistema
-- ✅ Guias de uso
+-  Informações sobre funcionalidades
+-  Como funciona o sistema
+-  Guias de uso
 
 ---
 
-## 🔌 API Endpoints
+##  API Endpoints
 
-### 🔐 Autenticação
+###  Autenticação
 
 #### Hybrid Auth (Firebase + JWT)
 ```
@@ -495,7 +493,7 @@ POST   /api/auth/hybrid/login       # Login com Firebase
 POST   /api/auth/hybrid/refresh     # Renovar JWT
 ```
 
-### 👥 Usuários
+###  Usuários
 ```
 GET    /api/users                   # Listar usuários (admin)
 GET    /api/users/:id               # Buscar usuário
@@ -503,7 +501,7 @@ PUT    /api/users/:id               # Atualizar usuário
 DELETE /api/users/:id               # Deletar usuário (admin)
 ```
 
-### 🏥 Consultas
+###  Consultas
 ```
 POST   /api/consultations                      # Criar consulta (nutritionist)
 GET    /api/consultations                      # Listar consultas (nutritionist)
@@ -517,7 +515,7 @@ GET    /api/consultations/patient/:patientId   # Consultas de paciente
 GET    /api/consultations/statistics           # Estatísticas
 ```
 
-### 🍽️ Planos Alimentares
+###  Planos Alimentares
 ```
 POST   /api/diet-plans              # Criar plano (nutritionist)
 GET    /api/diet-plans              # Listar planos (nutritionist)
@@ -528,7 +526,7 @@ GET    /api/diet-plans/patient/:id  # Planos de um paciente
 GET    /api/diet-plans/active       # Plano ativo (patient)
 ```
 
-### 📊 Avaliações Nutricionais
+###  Avaliações Nutricionais
 ```
 POST   /api/assessments             # Criar avaliação (nutritionist)
 GET    /api/assessments             # Listar avaliações (nutritionist)
@@ -538,7 +536,7 @@ DELETE /api/assessments/:id         # Deletar avaliação
 GET    /api/assessments/patient/:id # Avaliações de um paciente
 ```
 
-### 👥 Pacientes
+###  Pacientes
 ```
 POST   /api/patients                # Adicionar paciente (nutritionist)
 GET    /api/patients                # Listar pacientes (nutritionist)
@@ -548,7 +546,7 @@ DELETE /api/patients/:id            # Deletar paciente
 GET    /api/patients/:id/history    # Histórico completo do paciente
 ```
 
-### 📧 Convites
+###  Convites
 ```
 POST   /api/invites                 # Enviar convite (nutritionist)
 GET    /api/invites                 # Listar convites enviados
@@ -559,7 +557,7 @@ GET    /api/invites/:token          # Buscar convite por token
 DELETE /api/invites/:id             # Cancelar convite (nutritionist)
 ```
 
-### 📝 Blog
+###  Blog
 
 #### Rotas Públicas
 ```
@@ -578,14 +576,14 @@ PUT    /api/blog/:id                # Atualizar post
 DELETE /api/blog/:id                # Deletar post
 ```
 
-### 📊 Dashboard
+###  Dashboard
 ```
 GET    /api/dashboard/stats         # Estatísticas gerais (role-based)
 ```
 
 ---
 
-## 🚀 Deploy e Ambientes
+##  Deploy e Ambientes
 
 ### Ambientes de Produção
 
@@ -662,7 +660,7 @@ ENCRYPTION_KEY=<encryption_key_32_bytes>
 
 ---
 
-## 📝 Notas Importantes
+##  Notas Importantes
 
 ### Segurança
 - Senhas armazenadas com bcrypt (10 rounds)
@@ -671,29 +669,18 @@ ENCRYPTION_KEY=<encryption_key_32_bytes>
 - Validação de role em todos os endpoints protegidos
 - Firebase tokens validados no backend
 
-### Funcionalidades NÃO Implementadas
-- ❌ Registro manual de refeições pelo paciente
-- ❌ Gráficos de progresso de peso/medidas
-- ❌ Download de planos em PDF
-- ❌ Histórico de planos anteriores (UI)
-- ❌ Sistema de notificações push
-- ❌ Chat entre nutricionista e paciente
-- ❌ Integração com apps de fitness
-
 ### Estado Atual do Sistema
-- ✅ Autenticação funcionando (Firebase + JWT)
-- ✅ CRUD completo de consultas
-- ✅ CRUD completo de planos alimentares
-- ✅ CRUD completo de avaliações
-- ✅ Sistema de convites funcionando
-- ✅ Blog com publicação funcionando
-- ✅ Dashboards personalizados
-- ✅ Recuperação de senha implementada
-- ✅ Deploy em produção estável
+-  Autenticação funcionando (Firebase + JWT)
+-  CRUD completo de consultas
+-  CRUD completo de planos alimentares
+-  CRUD completo de avaliações
+-  Sistema de convites funcionando
+-  Blog com publicação funcionando
+-  Dashboards personalizados
 
 ---
 
-## 🔧 Estrutura de Pastas
+##  Estrutura de Pastas
 
 ### Frontend
 ```
@@ -726,16 +713,5 @@ backend/
 
 ---
 
-## 📞 Informações de Contato e Suporte
-
-Para dúvidas sobre o sistema, consulte:
-- Documentação técnica nos diretórios `/backend/docs/`
-- READMEs específicos em cada módulo
-- Commits do git para histórico de alterações
-- Issues no repositório (se aplicável)
-
----
-
-**Última atualização**: Dezembro 2024  
+**Última atualização**: Dezembro 2025  
 **Versão**: 1.0.0  
-**Status**: Produção ativa
