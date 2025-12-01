@@ -19,12 +19,15 @@ interface AuthRequest extends Request {
 class BlogController {
   /**
    * 📝 Criar nova postagem
-   * ⚠️ AUTENTICAÇÃO TEMPORARIAMENTE DESABILITADA - USANDO USER FIXO PARA TESTES
    */
   async createPost(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      // Usar ID do user logado ou ID de teste temporário
-      const userId = req.user?.id || '6928f1075216b84011c48be8'; // Ana Nova (nutricionista)
+      // Verificar autenticação
+      if (!req.user?.id) {
+        return next(new AppError('Usuário não autenticado', 401));
+      }
+
+      const userId = req.user.id;
       console.log('📝 [BlogController.createPost] userId:', userId);
       console.log('📝 [BlogController.createPost] req.body:', JSON.stringify(req.body, null, 2));
 
@@ -207,9 +210,13 @@ class BlogController {
   async updatePost(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      // ⚠️ Usando fallback temporário quando autenticação estiver desabilitada
-      const userId = req.user?.id || '6928f1075216b84011c48be8';
       
+      // Verificar autenticação
+      if (!req.user?.id) {
+        return next(new AppError('Usuário não autenticado', 401));
+      }
+
+      const userId = req.user.id;
       console.log('✏️ [updatePost] userId:', userId);
 
       if (!id) {
@@ -234,9 +241,13 @@ class BlogController {
   async deletePost(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      // ⚠️ Usando fallback temporário quando autenticação estiver desabilitada
-      const userId = req.user?.id || '6928f1075216b84011c48be8';
       
+      // Verificar autenticação
+      if (!req.user?.id) {
+        return next(new AppError('Usuário não autenticado', 401));
+      }
+
+      const userId = req.user.id;
       console.log('🗑️ [deletePost] userId:', userId);
 
       if (!id) {

@@ -267,27 +267,25 @@ router.get('/:id',
 
 /**
  * ✏️ Atualizar post (apenas autor ou admin)
- * ⚠️ AUTENTICAÇÃO TEMPORARIAMENTE DESABILITADA PARA TESTES
  */
 router.put('/:id',
-  // authenticate,  // ← DESABILITADO TEMPORARIAMENTE
-  // authorize(UserRole.NUTRITIONIST),  // ← DESABILITADO TEMPORARIAMENTE
+  authenticate,
+  authorize(UserRole.NUTRITIONIST),
   updatePostValidation,
   validateRequest,
-  // auditBlogAccess('blog_update', (req) => req.params.id || ''),  // ← DESABILITADO TEMPORARIAMENTE
+  auditBlogAccess('blog_update', (req) => req.params.id || ''),
   BlogController.updatePost
 );
 
 /**
  * 🗑️ Remover post (apenas autor ou admin)
- * ⚠️ AUTENTICAÇÃO TEMPORARIAMENTE DESABILITADA PARA TESTES
  */
 router.delete('/:id',
-  // authenticate,  // ← DESABILITADO TEMPORARIAMENTE
-  // authorize(UserRole.NUTRITIONIST),  // ← DESABILITADO TEMPORARIAMENTE
+  authenticate,
+  authorize(UserRole.NUTRITIONIST),
   [param('id').isMongoId().withMessage('ID do post inválido')],
   validateRequest,
-  // auditBlogAccess('blog_delete', (req) => req.params.id || ''),  // ← DESABILITADO TEMPORARIAMENTE
+  auditBlogAccess('blog_delete', (req) => req.params.id || ''),
   BlogController.deletePost
 );
 
