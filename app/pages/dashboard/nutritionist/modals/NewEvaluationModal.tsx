@@ -418,7 +418,7 @@ export default function NewEvaluationModal({ isOpen, onClose, patient }: NewEval
                                             onChange={(e) => setWeeklyFrequency(e.target.value)}
                                             className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                                         >
-                                            <option value="0">Sedentário (0 dias)</option>
+                                            <option value="0">Dias de exercício (0 dias)</option>
                                             <option value="1">1 dia por semana</option>
                                             <option value="2">2 dias por semana</option>
                                             <option value="3">3 dias por semana</option>
@@ -429,7 +429,7 @@ export default function NewEvaluationModal({ isOpen, onClose, patient }: NewEval
                                         </select>
                                     </div>
                                     <div>
-                                        <label htmlFor="sedentaryTime" className="block text-sm font-medium text-gray-700">Tempo Sedentário (horas/dia)</label>
+                                        <label htmlFor="sedentaryTime" className="block text-sm font-medium text-gray-700">Horas de exercício</label>
                                         <input 
                                             type="number" 
                                             min="0" 
