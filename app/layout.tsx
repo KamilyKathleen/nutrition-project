@@ -7,6 +7,7 @@ import Head from "./head";
 import Header from "@/app/components/header";
 import Footer from "@/app/components/footer";
 import { usePathname } from "next/navigation";
+import { AuthProvider } from "@/app/contexts/AuthContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,9 +38,11 @@ export default function RootLayout({
     <html lang="pt-br">
       <Head/>
       <body>
-        {showHeaderFooter && <Header/>}
-        {children}
-        {showHeaderFooter && <Footer/>}
+        <AuthProvider>
+          {showHeaderFooter && <Header/>}
+          {children}
+          {showHeaderFooter && <Footer/>}
+        </AuthProvider>
       </body>
     </html>
   );

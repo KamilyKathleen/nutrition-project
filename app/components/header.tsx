@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FaBars, FaTimes, FaInstagram, FaGlobe } from "react-icons/fa";
+import { FaBars, FaTimes, FaInstagram, FaGlobe, FaSignOutAlt } from "react-icons/fa";
 import Image from "next/image";
 import Logo from "@/public/logo.png";
 import Link from "next/link";
+import { useAuth } from "@/app/contexts/AuthContext";
 
 export default function Header() {
-
+    const { user, isAuthenticated, logout } = useAuth();
     const [isLargeScreen, setIsLargeScreen] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
     const [color, setColor] = useState(false);
@@ -77,14 +78,16 @@ export default function Header() {
                             Perguntas Frequentes
                         </Link>
                     </li>
-                    <li className="hover:border-b-2 hover:border-mintGreen">
-                        <Link
-                            href='/pages/dashboard'
-                            className="px-3 py-2"
-                        >
-                            Dashboard
-                        </Link>
-                    </li>
+                    {isAuthenticated && (
+                        <li className="hover:border-b-2 hover:border-mintGreen">
+                            <Link
+                                href='/pages/dashboard'
+                                className="px-3 py-2"
+                            >
+                                Dashboard
+                            </Link>
+                        </li>
+                    )}
                     <li className="hover:border-b-2 hover:border-mintGreen">
                         <Link
                             href='/pages/blog'
@@ -95,12 +98,27 @@ export default function Header() {
                     </li>
                 </ul>
                 <div className="flex items-center gap-2">
-                    <Link
-                        href='/pages/login'
-                        className="px-4 py-2 font-semibold bg-mintGreen text-coalGray rounded hover:bg-petroleumGreen hover:text-white transition flex items-center justify-center"
-                    >
-                        Entrar
-                    </Link>
+                    {isAuthenticated ? (
+                        <div className="flex items-center gap-3">
+                            <span className="text-sm font-medium">
+                                Olá, {user?.name}
+                            </span>
+                            <button
+                                onClick={logout}
+                                className="px-4 py-2 font-semibold bg-red-500 text-white rounded hover:bg-red-600 transition flex items-center justify-center gap-2"
+                            >
+                                <FaSignOutAlt />
+                                Sair
+                            </button>
+                        </div>
+                    ) : (
+                        <Link
+                            href='/pages/login'
+                            className="px-4 py-2 font-semibold bg-mintGreen text-coalGray rounded hover:bg-petroleumGreen hover:text-white transition flex items-center justify-center"
+                        >
+                            Entrar
+                        </Link>
+                    )}
                 </div>
             </div>
         </nav>
@@ -128,8 +146,8 @@ export default function Header() {
             </div>
             {menuOpen && (
                 <div className="bg-iceWhite flex flex-col w-full h-screen mt-10">
-                    <ul className="flex flex-col space-y-8 font-bold text-xl text-center">
-                        <li>
+                    <div className="flex flex-col space-y-8 font-bold text-xl text-center">
+                        <div>
                             <Link
                                 href="/"
                                 className="px-3 py-2 text-coalGray hover:border-b-2 hover:border-mintGreen"
@@ -137,9 +155,9 @@ export default function Header() {
                             >
                                 Home
                             </Link>
-                        </li>
-                        <hr className="w-[60%] mx-auto text-mintGreen" />
-                        <li>
+                            <hr className="w-[60%] mx-auto text-mintGreen mt-4" />
+                        </div>
+                        <div>
                             <Link
                                 href='/pages/frequentlyAsked'
                                 className="px-3 py-2 text-coalGray hover:border-b-2 hover:border-mintGreen"
@@ -147,19 +165,21 @@ export default function Header() {
                             >
                                 Perguntas Frequentes
                             </Link>
-                        </li>
-                        <hr className="w-[60%] mx-auto text-mintGreen" />
-                        <li>
-                            <Link
-                                href='/pages/dashboard'
-                                className="px-3 py-2 text-coalGray hover:border-b-2 hover:border-mintGreen"
-                                onClick={toggleMenu}
-                            >
-                                Dashboard
-                            </Link>
-                        </li>
-                        <hr className="w-[60%] mx-auto text-mintGreen" />
-                        <li>
+                            <hr className="w-[60%] mx-auto text-mintGreen mt-4" />
+                        </div>
+                        {isAuthenticated && (
+                            <div>
+                                <Link
+                                    href='/pages/dashboard'
+                                    className="px-3 py-2 text-coalGray hover:border-b-2 hover:border-mintGreen"
+                                    onClick={toggleMenu}
+                                >
+                                    Dashboard
+                                </Link>
+                                <hr className="w-[60%] mx-auto text-mintGreen mt-4" />
+                            </div>
+                        )}
+                        <div>
                             <Link
                                 href='/pages/blog'
                                 className="px-3 py-2 text-coalGray hover:border-b-2 hover:border-mintGreen"
@@ -167,17 +187,35 @@ export default function Header() {
                             >
                                 Blog
                             </Link>
-                        </li>
-                        <hr className="w-[60%] mx-auto text-mintGreen" />
-                    </ul>
-                    <div className="flex items-center gap-2 justify-center mt-8 mr-2">
-                        <Link
-                            href='/pages/login'
-                            className="px-4 py-2 font-semibold bg-mintGreen text-coalGray rounded hover:bg-petroleumGreen hover:text-white transition flex items-center justify-center"
-                            onClick={toggleMenu}
-                        >
-                            Entrar
-                        </Link>
+                            <hr className="w-[60%] mx-auto text-mintGreen mt-4" />
+                        </div>
+                    </div>
+                    <div className="flex flex-col items-center gap-4 justify-center mt-8">
+                        {isAuthenticated ? (
+                            <>
+                                <span className="text-coalGray font-medium">
+                                    Olá, {user?.name}
+                                </span>
+                                <button
+                                    onClick={() => {
+                                        logout();
+                                        toggleMenu();
+                                    }}
+                                    className="px-4 py-2 font-semibold bg-red-500 text-white rounded hover:bg-red-600 transition flex items-center justify-center gap-2"
+                                >
+                                    <FaSignOutAlt />
+                                    Sair
+                                </button>
+                            </>
+                        ) : (
+                            <Link
+                                href='/pages/login'
+                                className="px-4 py-2 font-semibold bg-mintGreen text-coalGray rounded hover:bg-petroleumGreen hover:text-white transition flex items-center justify-center"
+                                onClick={toggleMenu}
+                            >
+                                Entrar
+                            </Link>
+                        )}
                     </div>
                 </div>
             )}

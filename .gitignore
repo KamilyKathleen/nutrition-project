@@ -12,6 +12,7 @@
 
 # testing
 /coverage
+test-results*.json
 
 # next.js
 /.next/
@@ -30,6 +31,12 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# Development only files
+/docs/dev/
+/scripts/debug/
+*.pdf
+resumoAtt.txt
+
 # env files (can opt-in for committing if needed)
 .env*
 
@@ -39,3 +46,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Secret Ky
+.SecretKey.json

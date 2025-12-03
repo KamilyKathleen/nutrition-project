@@ -1,0 +1,164 @@
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import compression from 'compression';
+import { config } from './config/environment';
+import { errorHandler } from './middlewares/errorHandler';
+import { rateLimiter } from './middlewares/rateLimiter';
+import { authRoutes } from './routes/authRoutes';
+import firebaseAuthRoutes from './routes/firebaseAuth';
+import { hybridAuthRoutes } from './routes/hybridAuthRoutes';
+import { userRoutes } from './routes/userRoutes';
+import { patientRoutes } from './routes/patientRoutes';
+import { patientDataRoutes } from './routes/patientDataRoutes';
+import { nutritionalAssessmentRoutes } from './routes/nutritionalAssessmentRoutes';
+import { dietPlanRoutes } from './routes/dietPlanRoutes';
+import { consultationRoutes } from './routes/consultationRoutes';
+import { blogRoutes } from './routes/blogRoutes';
+import { reportRoutes } from './routes/reportRoutes';
+import auditRoutes from './routes/auditRoutes';
+import { notificationRoutes } from './routes/notificationRoutes';
+import metricRoutes from './routes/metricRoutes';
+import { exportRoutes } from './routes/exportRoutes';
+import { metricsMiddleware, systemMetricsMiddleware } from './middlewares/metricsBasic';
+import { connectToDatabase } from './config/database';
+
+const app = express();
+
+// Middleware para garantir conexão com MongoDB antes de processar requests
+app.use(async (req, res, next) => {
+  try {
+    await connectToDatabase();
+    next();
+  } catch (error) {
+    console.error('❌ Erro ao conectar ao MongoDB no middleware:', error);
+    res.status(503).json({ 
+      success: false, 
+      message: 'Serviço temporariamente indisponível - erro de conexão com banco de dados' 
+    });
+  }
+});
+
+// Middlewares de segurança
+app.use(helmet());
+app.use(compression());
+app.use(rateLimiter);
+
+// CORS configuration - Liberado para todas as origens
+app.use(cors({
+  origin: '*',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200
+}));
+
+// Body parsing middleware
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Métricas middleware
+app.use(metricsMiddleware);
+
+// Logging
+if (config.NODE_ENV !== 'test') {
+  app.use(morgan('combined'));
+}
+
+// Health check
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    environment: config.NODE_ENV 
+  });
+});
+
+// Environment check (debug)
+app.get('/health/env', (req, res) => {
+  const mongoUri = config.MONGODB_URI || '';
+  const maskedUri = mongoUri.replace(/\/\/([^:]+):([^@]+)@/, '//$1:****@');
+  
+  res.json({
+    mongoUri: maskedUri,
+    hasMongoUri: !!config.MONGODB_URI,
+    nodeEnv: config.NODE_ENV,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Database connection test
+app.get('/health/db', async (req, res) => {
+  try {
+    const mongoose = require('mongoose');
+    
+    if (mongoose.connection.readyState === 1) {
+      res.json({
+        status: 'OK',
+        database: 'connected',
+        dbState: 'connected',
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      res.status(503).json({
+        status: 'ERROR',
+        database: 'disconnected',
+        dbState: mongoose.connection.readyState,
+        timestamp: new Date().toISOString()
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      database: 'error',
+      message: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/auth/firebase', firebaseAuthRoutes); // 🔥 Firebase Auth
+app.use('/api/auth', hybridAuthRoutes); // 🔥🎫 Hybrid Auth (Firebase + JWT)
+app.use('/api/users', userRoutes);
+app.use('/api/patients', patientRoutes);
+app.use('/api/patient-data', patientDataRoutes);
+app.use('/api/nutritional-assessments', nutritionalAssessmentRoutes);
+app.use('/api/diet-plans', dietPlanRoutes);
+app.use('/api/consultations', consultationRoutes);
+app.use('/api/blog', blogRoutes);
+app.use('/api/reports', reportRoutes);
+app.use('/api/audit', auditRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/metrics', metricRoutes);
+app.use('/api/exports', exportRoutes);
+
+// Rotas de convites
+import { inviteRoutes } from './routes/inviteRoutes';
+app.use('/api/invites', inviteRoutes);
+
+// Rotas de debug (apenas desenvolvimento)
+import { debugRoutes } from './routes/debugRoutes';
+if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
+  app.use('/api', debugRoutes);
+}
+
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: 'Route not found'
+  });
+});
+
+// Error handler
+app.use(errorHandler);
+
+// Inicializar métricas de sistema
+if (config.NODE_ENV !== 'test') {
+  systemMetricsMiddleware();
+}
+
+export default app;
